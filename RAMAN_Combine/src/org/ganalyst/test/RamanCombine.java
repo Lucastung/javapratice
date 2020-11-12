@@ -1,6 +1,9 @@
 package org.ganalyst.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -32,19 +35,38 @@ public class RamanCombine {
 		}                              //<===== for loop end
 		
 		//******* Get file list
-		File tDir = new File(atable.get("-T"));
-		File sDir = new File(atable.get("-S"));
+		File[][] mFiles = new File[2][];
+		mFiles[0] = new File(atable.get("-T")).listFiles();
+		mFiles[1] = new File[mFiles[0].length];
+		for (int i=0 ;i< mFiles[0].length;i++) {
+			
+			File f1 = new File(atable.get("-T")+mFiles[0][i].getName());
+			if(f1.exists()) {
+				mFiles[1][i]=f1;
+			} else {
+				System.out.println(mFiles[0][i].getName() +" is not paired!");
+				System.exit(-1);				
+			}
+			
+		}
 		
-		if(!tDir.isDirectory() || !sDir.isDirectory()) {
-			System.out.println("Path is not direcotry!");
-			System.exit(-1);
-		}		
-		File[] tFiles = tDir.listFiles();
-		File[] sFiles = sDir.listFiles();
-
+		//******* Merge file list
+		try {
+			String result = fileMerge (mFiles);
+			Files.write(Paths.get(flist.get(0)), result.getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 
 
+	}
+
+	private static String fileMerge(File[][] mFiles) {
+		String result= null;
+
+		return result;
 	}
 
 }

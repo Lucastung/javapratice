@@ -1,14 +1,12 @@
 package org.ganalyst.test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class RamanCombine {
 
 	public static void main(String[] args) {
-		//First test
-		System.out.print("Hello");
-		
 		//Create a dictionary for arg lookup parameter (lead with "-" )
 		Hashtable <String,String> atable = new Hashtable<String,String>();
 		//Create a list array for filename (the rest string)
@@ -33,6 +31,19 @@ public class RamanCombine {
 			}
 		}                              //<===== for loop end
 		
+		//******* Get file list
+		File tDir = new File(atable.get("-T"));
+		File sDir = new File(atable.get("-S"));
+		
+		if(!tDir.isDirectory() || !sDir.isDirectory()) {
+			System.out.println("Path is not direcotry!");
+			System.exit(-1);
+		}		
+		File[] tFiles = tDir.listFiles();
+		File[] sFiles = sDir.listFiles();
+
+		
+
 
 	}
 

@@ -43,55 +43,38 @@ public class RamanCombine {
 		} 
 		mFiles[0] = t.listFiles();
 		mFiles[1] = c.listFiles();
+		//Create samples container in array
+		RamanSample[] samplelist = new RamanSample[mFiles[0].length];
+		//Create sample one by one and load test and control sample
+		for(int i = 0;i<mFiles[0].length;i++) {			
+			try {
+				samplelist[i] = new RamanSample(mFiles[0][i],mFiles[1][0]);
+				
+				//Get first value of new sample
+				float x = samplelist[i].getTestIndex(10);
+				float y = samplelist[i].getControlIndex(11);
+				if( x==-1 || y == -1) {
+					System.out.println(samplelist[i].getName() + " have null value");
+					float z = samplelist[i].getWave(1999);
+				} else {
+					System.out.print(samplelist[i].getName() + ":");
+					System.out.println(x/y);
+				}
+				
 
-		//Merge file 		
-		try {
-			String result  = mergeFile(mFiles);
-			System.out.println(result);
-			Files.write(Paths.get(ftable.get(0)), result.getBytes());
-			
-		} catch (IOException e) {			
-			e.printStackTrace();
-			System.out.println("Write file error!");
-			System.exit(-1);
+				
+			} catch (IOException e) {
+				System.out.println(mFiles[0][i].getName() +" fails "+ e.getMessage() );
+			}
 		}
+		
+		
+
 
 
 	}
+	
 
-	private static String mergeFile(File[][] mFiles) throws IOException {
-		
-		String  fdata = new String(Files.readAllBytes(mFiles[0][0].toPath()));
-		String[] firstdata = fdata.split("\n");
-		//file format
-		//wlen sample1_T Sample1_C Sample2_T .....
-		//800 1.234
-		//801 2.3432
-		
-		String header = "WaveLength";
-		String[] data = new String[fdata.length()];
-		for(int i = 0;i<firstdata.length;i++) {		
-			data[i]=firstdata[i].split("\t")[0];
-		}
-		//merge file one by one
-		for (int i = 0;i<mFiles[0].length;i++) {
-			String[] tdata = new String(Files.readAllBytes(mFiles[0][i].toPath())).split("\n");
-			String[] cdata = new String(Files.readAllBytes(mFiles[1][i].toPath())).split("\n");
-			//Sample1.txt => Sample1_T
-			header  += "\t"+mFiles[0][i].getName().replace(".txt","_T");
-			header += "\t"+mFiles[1][i].getName().replace(".txt","_C");
-			
-			for(int j =0;j < tdata.length;j++) {
-				if(tdata[j].equals("")) continue;
-				data[j] += "\t"+tdata[j].split("\t")[1].trim(); 
-				data[j] += "\t"+cdata[j].split("\t")[1].trim();
-			}			
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(header);
-		for(int i = 0; i <data.length;i++) {
-			sb.append("\n"+data[i]);
-		}	
-		return sb.toString();
-	}
+
+
 }

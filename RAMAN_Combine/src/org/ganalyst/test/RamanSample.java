@@ -34,28 +34,31 @@ public class RamanSample {
 		} else if (i == 1) {
 			myData = cData;
 		} else {
-			System.out.println("Error!");
+			System.out.println("type index is wrong");
 			System.exit(-1);
 		}		
 		//get value
 		//  wb...w1...wf
-		
-		
+				
 		for(int j =0;j<myData.length;j++) {
+			
 			double wf = Double.valueOf(myData[j].substring(0, 9));
 			if(wf>w1) {
 				double wb = Double.valueOf(myData[j-1].substring(0, 9));
 				if( (wf-w1) > (w1-wb)) {
 					// wb is closer
 					return Double.valueOf(myData[j-1].substring(11));
-				} else {
+				} else if ( (wf-w1) < (w1-wb)) {
+					// wf is closer
 					return Double.valueOf(myData[j].substring(11));
+				} else {
+					//wb-wf is eqaul, return mean
+					return (Double.valueOf(myData[j].substring(11))+Double.valueOf(myData[j-1].substring(11)))/2;
 				}
 			}
-			
-			
 		}
-		return 0;
+		//no data > w1
+		return -1;
 	}	
 	
 	public double getIndex(int _index, int i) {

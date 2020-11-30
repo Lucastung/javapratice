@@ -21,28 +21,60 @@ public class RamanSample {
 		
 		
 	}
-	float getTestIndex(int _index) {
-		
-		if(_index>tData.length) {
-			return -1;
-		}		
-		String[] values = tData[_index].split("\t");
-		return Float.valueOf(values[1]) ;
-	}
-	float getControlIndex(int _index) {
-		if(_index>cData.length) {
-			return -1;
-		}				
-		String[] values = cData[_index].split("\t");
-		return Float.valueOf(values[1]) ;
-	}
 	public String getName() {
 		return Name;
 	}
-	public float getWave(int i) {
-		// TODO Auto-generated method stub
+
+	// i = 1 =>control sample
+	// i = 0 =>test sample
+	public double getWave(double w1, int i) {
+		String[] myData = null;
+		if(i==0) {
+			myData = tData;
+		} else if (i == 1) {
+			myData = cData;
+		} else {
+			System.out.println("Error!");
+			System.exit(-1);
+		}		
+		//get value
+		//  wb...w1...wf
+		
+		
+		for(int j =0;j<myData.length;j++) {
+			double wf = Double.valueOf(myData[j].substring(0, 9));
+			if(wf>w1) {
+				double wb = Double.valueOf(myData[j-1].substring(0, 9));
+				if( (wf-w1) > (w1-wb)) {
+					// wb is closer
+					return Double.valueOf(myData[j-1].substring(11));
+				} else {
+					return Double.valueOf(myData[j].substring(11));
+				}
+			}
+			
+			
+		}
 		return 0;
 	}	
+	
+	public double getIndex(int _index, int i) {
+		String[] myData = null;
+		if(i==0) {
+			myData = cData;
+		} else if (i == 1) {
+			myData = tData;
+		} else {
+			System.out.println("Error!");
+			System.exit(-1);
+		}
+				
+		if(_index > myData.length) {
+			return -1;
+		}		
+		String[] values = myData[_index].split("\t");
+		return Double.valueOf(values[1]) ;
+	}
 	
 
 }

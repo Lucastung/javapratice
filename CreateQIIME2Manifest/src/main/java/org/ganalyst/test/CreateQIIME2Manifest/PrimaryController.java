@@ -18,8 +18,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class PrimaryController {
-	public class sampleFiles{
-		
+	public class sampleFiles{		
 		private SimpleStringProperty col1;
 		private SimpleStringProperty col2;
 		private SimpleStringProperty col3;
@@ -49,8 +48,8 @@ public class PrimaryController {
 			return col3.get();
 		}
 	}
-	
-public static void main(String[] args)throws Exception {
+//Lucas: controller is not start point, don't use static main	
+public  void main(String[] args)throws Exception {
 		
 		Hashtable <String,String> vcftable = new Hashtable <String,String>();
 		ArrayList <String> ftable = new ArrayList <String>();
@@ -70,16 +69,24 @@ public static void main(String[] args)throws Exception {
 		}
 		readAllFile(vcftable.get("-i"));
 	}
-	
-	public static void readAllFile(String fq) {		
+
+//Lucas: controller is not start point, don't use static 	
+	public  void readAllFile(String fq) {	
+		//Lucas: create list here
+		ObservableList<sampleFiles> data = FXCollections.observableArrayList();
 		File f = new File(fq);
 		if(!f.isDirectory()) {
 			System.exit(-1);
 		}else {
 			System.out.println("這是存放raw files的資料夾");
-			String[] filelist=f.list();
+			//Lucas: Using listFiles() instead list(), you can extract more info from file object
+			File[] filelist=f.listFiles();
 			for(int i = 0; i<filelist.length;i++) {
-				usingBufferedReader(filelist[i]);
+			// Lucas: add row one by one
+				sampleFiles newRow = new sampleFiles(filelist[i].getName(),filelist[i].getPath(),"Something");
+				data.add(newRow);
+				
+			//	usingBufferedReader(filelist[i]);
 			//	System.out.println(filelist[i]);
 			}
 		}

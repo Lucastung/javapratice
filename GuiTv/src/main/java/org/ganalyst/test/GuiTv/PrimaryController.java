@@ -1,8 +1,10 @@
 package org.ganalyst.test.GuiTv;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -15,6 +17,7 @@ import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.FileChooser;
 
 public class PrimaryController {
 	public class dataRow{
@@ -59,6 +62,24 @@ public class PrimaryController {
 	
     @FXML
     private void switchToSecondary() throws IOException {
+    	//Lucas: single file selection
+    	FileChooser fileChooser0 = new FileChooser();
+    	fileChooser0.setTitle("Open Resource File");
+    	//for extension restrict
+    	fileChooser0.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("fastq", "*.fastq"),
+                new FileChooser.ExtensionFilter("fastq.gz", "*.fastq.gz")
+            );
+    	
+    	File selectFile  = fileChooser0.showOpenDialog(App.primaryStage);
+    	
+    	//Lucas: multiple file selection
+    	FileChooser fileChooser1 = new FileChooser();
+    	fileChooser1.setTitle("Open Resource File");
+    	List<File> selectFiles  = fileChooser1.showOpenMultipleDialog(App.primaryStage);
+    	
+    	
+    	
     	
     	ObservableList<dataRow>  data = FXCollections.observableArrayList(
     			 new dataRow("A1","B1","C1")

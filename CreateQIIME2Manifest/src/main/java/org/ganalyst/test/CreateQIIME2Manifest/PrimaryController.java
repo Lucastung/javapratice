@@ -1,8 +1,10 @@
 package org.ganalyst.test.CreateQIIME2Manifest;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -18,12 +20,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 public class PrimaryController {
-	public class sampleFiles{		
+	public class sampleFile{		
 		private SimpleStringProperty col1;
 		private SimpleStringProperty col2;
 		private SimpleStringProperty col3;
 		
-		public sampleFiles(String _col1, String _col2, String _col3) {
+		public sampleFile(String _col1, String _col2, String _col3) {
 			this.col1 = new SimpleStringProperty(_col1);
 			this.col2 = new SimpleStringProperty(_col2);
 			this.col3 = new SimpleStringProperty(_col3);
@@ -48,103 +50,86 @@ public class PrimaryController {
 			return col3.get();
 		}
 	}
-//Lucas: controller is not start point, don't use static main	
-public  void main(String[] args)throws Exception {
-		
-		Hashtable <String,String> vcftable = new Hashtable <String,String>();
-		ArrayList <String> ftable = new ArrayList <String>();
-		
-		for(int i = 0; i<args.length;i++) {
-			if(args[i].startsWith("-")) {
-				if((i+1)>args.length) {
-					System.out.println(args[i] + " is empty!");
-					System.exit(-1);
-				}
-				vcftable.put(args[i], args[i+1]);
-				i++;
-			}else {
-				ftable.add(args[i]);
-			}
-			
-		}
-		readAllFile(vcftable.get("-i"));
-	}
 
-//Lucas: controller is not start point, don't use static 	
-	public  void readAllFile(String fq) {	
-		//Lucas: create list here
-		ObservableList<sampleFiles> data = FXCollections.observableArrayList();
-		File f = new File(fq);
-		if(!f.isDirectory()) {
-			System.exit(-1);
-		}else {
-			System.out.println("這是存放raw files的資料夾");
-			//Lucas: Using listFiles() instead list(), you can extract more info from file object
-			File[] filelist=f.listFiles();
-			for(int i = 0; i<filelist.length;i++) {
-			// Lucas: add row one by one
-				sampleFiles newRow = new sampleFiles(filelist[i].getName(),filelist[i].getPath(),"Something");
-				data.add(newRow);
-				
-			//	usingBufferedReader(filelist[i]);
-			//	System.out.println(filelist[i]);
-			}
-		}
-		
-	}
-	
-	private static String usingBufferedReader(String Multifq) {
-		StringBuilder contentBuilder = new StringBuilder();
-		try (BufferedReader br = new BufferedReader(new FileReader("raw/"+ Multifq))) {
-			System.out.println(Multifq.getBytes()[0]);     //Can't get name of fastq.gz 
-			String sCurrentLine = br.getClass().toString();
-			System.out.println(sCurrentLine);
-			String[] columns;
-			if(sCurrentLine.endsWith(".fastq.gz") ) {
-				columns = sCurrentLine.split("_");
-			}
-			
-			while ((sCurrentLine = br.readLine()) != null) {
-				
-			}
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return contentBuilder.toString();
-	}
 	
 	@FXML
-	TableView<sampleFiles> tv;
+	TableView<sampleFile> tv;
 
     @FXML
     private void switchToSecondary() throws IOException {
     	
-    	ObservableList<sampleFiles> data = FXCollections.observableArrayList(
-    			//new sampleFiles(columns[0],columns[1],columns[2])
-    			new sampleFiles("A1","B1","C1"),new sampleFiles("A2","B2","C2"),new sampleFiles("A3","B3","C3"));
+    	ObservableList<sampleFile> data = FXCollections.observableArrayList();
+    	File f = new File("raw/");
+    	if(!f.isDirectory()) {
+    		System.exit(-1);
+    	}else {
+    		System.out.println("這是存放raw files的資料夾");
+    		File[] filelist=f.listFiles();
+    		String name;
+    		String path;
+    		String direction;
+    		for(int i = 0; i<filelist.length;i++) {
+    			name = filelist[i].getName().split("_")[0];
+				path = filelist[i].getAbsolutePath();
+				if (filelist[i].getName().split("_")[1].endsWith("R1.fastq.gz")) {
+					direction = "forword";
+				}else {
+					direction = "reverse";
+				}
+				sampleFile newRow = new sampleFile(name,path,direction);
+				data.add(newRow);
+    		}
+    	}
     	
     	tv.setEditable(true);
-    	TableColumn<sampleFiles,String> firstNameCol = new TableColumn<sampleFiles,String>("Column 1");
+    	TableColumn<sampleFile,String> firstNameCol = new TableColumn<sampleFile,String>("Column 1");
     	firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
     	firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
     	firstNameCol.setOnEditCommit(
-        		new EventHandler<CellEditEvent<sampleFiles, String>>() {
+        		new EventHandler<CellEditEvent<sampleFile, String>>() {
         			@Override
-        			public void handle(CellEditEvent<sampleFiles, String> t) {
-        				((sampleFiles) t.getTableView().getItems().get(
+        			public void handle(CellEditEvent<sampleFile, String> t) {
+        				((sampleFile) t.getTableView().getItems().get(
         						t.getTablePosition().getRow())
         				        ).setCol1(t.getNewValue());
         			}
         			
         		}
         		);
+    	TableColumn<sampleFile,String> secondNameCol = new TableColumn<sampleFile,String>("absolute-filepath");
+    	secondNameCol.setCellValueFactory(new PropertyValueFactory("col2"));
+    	secondNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    	secondNameCol.setOnEditCommit(
+        		new EventHandler<CellEditEvent<sampleFile, String>>() {
+        			@Override
+        			public void handle(CellEditEvent<sampleFile, String> t) {
+        				((sampleFile) t.getTableView().getItems().get(
+        						t.getTablePosition().getRow())
+        				        ).setCol2(t.getNewValue());
+        			}        			
+        		}
+        		);
+    	TableColumn<sampleFile,String> thirdNameCol = new TableColumn<sampleFile,String>("direction");
+    	thirdNameCol.setCellValueFactory(new PropertyValueFactory("col3"));
+    	thirdNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    	thirdNameCol.setOnEditCommit(
+        		new EventHandler<CellEditEvent<sampleFile, String>>() {
+        			@Override
+        			public void handle(CellEditEvent<sampleFile, String> t) {
+        				((sampleFile) t.getTableView().getItems().get(
+        						t.getTablePosition().getRow())
+        				        ).setCol3(t.getNewValue());
+        			}        			
+        		}
+        		);
     	
-    	tv.getItems().addAll(data);
-    	tv.getColumns().addAll(firstNameCol);
+
+		tv.getItems().addAll(data);
+    	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
     	
-    	
-    	
+    	File txtfile = new File("manifest_0614.txt");
+    	BufferedWriter bf = new BufferedWriter(new FileWriter(txtfile));
+    	bf.write(tv.getVisibleLeafIndex(firstNameCol));
+	
     }
 }

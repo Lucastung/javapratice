@@ -13,6 +13,7 @@
    <children>
       <Label text="Primary View" />
       <Button fx:id="primaryButton" onAction="#switchToSecondary" text="Switch to Secondary View" />
+      <Button mnemonicParsing="false" onAction="#WriteTable" text="Button" />
       <TableView fx:id="tv" prefHeight="200.0" prefWidth="200.0" />
    </children>
    <padding>

@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
@@ -18,6 +19,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.FileChooser;
 
 public class PrimaryController {
 	public class sampleFile{		
@@ -127,9 +129,35 @@ public class PrimaryController {
 		tv.getItems().addAll(data);
     	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
     	
-    	File txtfile = new File("manifest_0614.txt");
-    	BufferedWriter bf = new BufferedWriter(new FileWriter(txtfile));
-    	bf.write(tv.getVisibleLeafIndex(firstNameCol));
+
 	
     }
+    
+    @FXML
+    private void WriteTable(ActionEvent e) {
+    	//Lucas: set file name for saving.
+    	FileChooser fileChooser0 = new FileChooser();
+    	fileChooser0.setTitle("Save as");
+    	File selectFile  = fileChooser0.showSaveDialog(null);
+    	if(selectFile == null) return;
+    	File txtfile = selectFile;
+    	
+    	/*
+    	BufferedWriter bf = new BufferedWriter(new FileWriter(txtfile));
+    	bf.append("col1\tcol2\tcol3");
+    	
+    	ObservableList<sampleFile> data = tv.getItems();
+    	
+    	for (sampleFile sf :data) {
+    		
+    		bf.append("\n"+sf.getCol1()+"\t");
+    		
+    	}
+    	bf.flush();
+    	bf.close();
+		*/
+    	
+    }
+    
+    
 }

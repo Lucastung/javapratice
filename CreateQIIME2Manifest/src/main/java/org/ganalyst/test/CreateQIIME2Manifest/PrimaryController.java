@@ -132,21 +132,22 @@ public class PrimaryController {
     @FXML
     private void WriteTable(ActionEvent e) {
     	//Lucas: set file name for saving.
-    	FileChooser fileChooser0 = new FileChooser();
-    	fileChooser0.setTitle("Save as");
-    	File selectFile  = fileChooser0.showSaveDialog(null);
+    	FileChooser savefileName = new FileChooser();
+    	savefileName.setTitle("Save as...");
+    	savefileName.setInitialFileName(null+".txt");
+    	File selectFile  = savefileName.showSaveDialog(null);
     	if(selectFile == null) return;
     	File txtfile = selectFile;
     	
     	BufferedWriter bf;
 		try {
 			bf = new BufferedWriter(new FileWriter(txtfile));
-			bf.append("sample-id"+"\t"+"absolute-filepath"+"\t"+"direction");
+			bf.append("sample-id"+","+"absolute-filepath"+","+"direction");
 
 	    	ObservableList<sampleFile> tvdata = tv.getItems();
 	    	
 	    	for (sampleFile sf : tvdata) {	
-	    		bf.append("\n"+sf.getCol1()+"\t"+sf.getCol2()+"\t"+sf.getCol3());
+	    		bf.append("\n"+sf.getCol1()+","+sf.getCol2()+","+sf.getCol3());
 	    		
 	    	}
 	    	bf.flush();

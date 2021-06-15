@@ -58,14 +58,13 @@ public class PrimaryController {
 	TableView<sampleFile> tv;
 
     @FXML
-    private void switchToSecondary() throws IOException {
+    private void loadFile() throws IOException {
     	
     	ObservableList<sampleFile> data = FXCollections.observableArrayList();
     	File f = new File("raw/");
     	if(!f.isDirectory()) {
     		System.exit(-1);
     	}else {
-    		System.out.println("這是存放raw files的資料夾");
     		File[] filelist=f.listFiles();
     		String name;
     		String path;
@@ -84,7 +83,7 @@ public class PrimaryController {
     	}
     	
     	tv.setEditable(true);
-    	TableColumn<sampleFile,String> firstNameCol = new TableColumn<sampleFile,String>("Column 1");
+    	TableColumn<sampleFile,String> firstNameCol = new TableColumn<sampleFile,String>("sample-id");
     	firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
     	firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
     	firstNameCol.setOnEditCommit(
@@ -124,13 +123,10 @@ public class PrimaryController {
         			}        			
         		}
         		);
-    	
 
 		tv.getItems().addAll(data);
     	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
-    	
 
-	
     }
     
     @FXML
@@ -142,22 +138,23 @@ public class PrimaryController {
     	if(selectFile == null) return;
     	File txtfile = selectFile;
     	
-    	/*
-    	BufferedWriter bf = new BufferedWriter(new FileWriter(txtfile));
-    	bf.append("col1\tcol2\tcol3");
-    	
-    	ObservableList<sampleFile> data = tv.getItems();
-    	
-    	for (sampleFile sf :data) {
-    		
-    		bf.append("\n"+sf.getCol1()+"\t");
-    		
-    	}
-    	bf.flush();
-    	bf.close();
-		*/
-    	
+    	BufferedWriter bf;
+		try {
+			bf = new BufferedWriter(new FileWriter(txtfile));
+			bf.append("sample-id"+"\t"+"absolute-filepath"+"\t"+"direction");
+
+	    	ObservableList<sampleFile> tvdata = tv.getItems();
+	    	
+	    	for (sampleFile sf : tvdata) {	
+	    		bf.append("\n"+sf.getCol1()+"\t"+sf.getCol2()+"\t"+sf.getCol3());
+	    		
+	    	}
+	    	bf.flush();
+	    	bf.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	
     }
-    
     
 }

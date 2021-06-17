@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Optional;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -19,6 +20,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -63,12 +65,13 @@ public class PrimaryController {
 	@FXML
 //	TableView<sampleFile> tableMetadata;
 	TableView<Map<String,String>> tableMetadata;
+	ObservableList<sampleFile> data = FXCollections.observableArrayList();
+	ObservableList<Map<String,String>> data2 = FXCollections.observableArrayList();
 
     @FXML
     private void loadFile() throws IOException {
     	
-    	ObservableList<sampleFile> data = FXCollections.observableArrayList();
-    	ObservableList<Map<String,String>> data2 = FXCollections.observableArrayList();
+
     	File f = new File("raw/");
     	if(!f.isDirectory()) {
     		System.exit(-1);
@@ -135,10 +138,12 @@ public class PrimaryController {
 
 		tv.getItems().addAll(data);	
     	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
+    	
     	HashMap<String, String> d2 = new HashMap<String, String>();
     	d2.put("#SampleID", "S1");
+    	d2.put("Type","Category");
     	data2.add(d2);
-    	addColumn();
+    	addColumn("#SampleID");
     	tableMetadata.getItems().addAll(data2);
 
     }
@@ -176,11 +181,30 @@ public class PrimaryController {
 //	TableView<Map<String,String>> tableMetadata;
     
     @FXML
-    private void addColumn() {
+    private void btnAddCol() {
+    	//inputbox 
+    	
+    	TextInputDialog dialog = new TextInputDialog("Input dialog");
+    	dialog.setTitle("Column Name");
+    	dialog.setContentText("Please enter factor:");
+    	Optional<String> result = dialog.showAndWait();
+    	if (result.isPresent()){  	
+        	for(Map<String,String> m :data2) {
+        		m.put(result.get(), "NA");
+        	}
+         	addColumn(result.get());
+    	}
+
+    }
+    
+    
+    
+    
+    private void addColumn(String colname) {
     	// HashMap as a row object
 //    	ArrayList<Map<String, String>> valuesArray = new ArrayList<>();
     	tableMetadata.setEditable(true);
-    	String colname = "#SampleID";
+    	
     	//Create Column
     	String header = colname;
 		//Data source as Map<S,S>, show String value

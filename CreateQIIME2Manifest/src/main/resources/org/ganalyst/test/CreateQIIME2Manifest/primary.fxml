@@ -21,7 +21,7 @@
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Button fx:id="primaryButton" onAction="#loadFile" text="Load" />
-            <Button mnemonicParsing="false" onAction="#addColumn" text="Add Column" />
+            <Button mnemonicParsing="false" onAction="#btnAddCol" text="Add Column" />
             <Button mnemonicParsing="false" onAction="#WriteTable" text="Export" />
          </children>
       </HBox>
@@ -32,9 +32,9 @@
                   <TableView fx:id="tv" prefHeight="235.0" prefWidth="305.0" />
                </content>
           </Tab>
-          <Tab fx:id="tableMetadata" text="MetaData">
+          <Tab text="MetaData">
                <content>
-                  <TableView prefHeight="200.0" prefWidth="200.0" />
+                  <TableView fx:id="tableMetadata" prefHeight="200.0" prefWidth="200.0" />
                </content>
           </Tab>
         </tabs>

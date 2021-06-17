@@ -9,7 +9,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.geometry.Insets?>
 
-<GridPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ganalyst.test.CreateQIIME2Manifest.PrimaryController">
+<GridPane prefHeight="401.0" prefWidth="298.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ganalyst.test.CreateQIIME2Manifest.PrimaryController">
    <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
    </columnConstraints>
@@ -21,6 +21,7 @@
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Button fx:id="primaryButton" onAction="#loadFile" text="Load" />
+            <Button mnemonicParsing="false" onAction="#addColumn" text="Add Column" />
             <Button mnemonicParsing="false" onAction="#WriteTable" text="Export" />
          </children>
       </HBox>
@@ -28,17 +29,12 @@
         <tabs>
           <Tab text="Menfiest">
                <content>
-                  <TableView fx:id="tv" prefHeight="502.0" prefWidth="432.0" />
+                  <TableView fx:id="tv" prefHeight="235.0" prefWidth="305.0" />
                </content>
           </Tab>
-          <Tab text="MetaData">
+          <Tab fx:id="tableMetadata" text="MetaData">
                <content>
-                  <TableView prefHeight="200.0" prefWidth="200.0">
-                    <columns>
-                      <TableColumn prefWidth="75.0" text="C1" />
-                      <TableColumn prefWidth="75.0" text="C2" />
-                    </columns>
-                  </TableView>
+                  <TableView prefHeight="200.0" prefWidth="200.0" />
                </content>
           </Tab>
         </tabs>

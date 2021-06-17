@@ -7,7 +7,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -56,11 +59,16 @@ public class PrimaryController {
 	
 	@FXML
 	TableView<sampleFile> tv;
+	
+	@FXML
+//	TableView<sampleFile> tableMetadata;
+	TableView<Map<String,String>> tableMetadata;
 
     @FXML
     private void loadFile() throws IOException {
     	
     	ObservableList<sampleFile> data = FXCollections.observableArrayList();
+    	ObservableList<Map<String,String>> data2 = FXCollections.observableArrayList();
     	File f = new File("raw/");
     	if(!f.isDirectory()) {
     		System.exit(-1);
@@ -125,9 +133,13 @@ public class PrimaryController {
         		}
         		);
 
-		tv.getItems().addAll(data);
-		
+		tv.getItems().addAll(data);	
     	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
+    	HashMap<String, String> d2 = new HashMap<String, String>();
+    	d2.put("#SampleID", "S1");
+    	data2.add(d2);
+    	addColumn();
+    	tableMetadata.getItems().addAll(data2);
 
     }
     
@@ -159,5 +171,40 @@ public class PrimaryController {
 		}
 	
     }
+    
+//    @FXML
+//	TableView<Map<String,String>> tableMetadata;
+    
+    @FXML
+    private void addColumn() {
+    	// HashMap as a row object
+//    	ArrayList<Map<String, String>> valuesArray = new ArrayList<>();
+    	tableMetadata.setEditable(true);
+    	String colname = "#SampleID";
+    	//Create Column
+    	String header = colname;
+		//Data source as Map<S,S>, show String value
+		TableColumn<Map<String, String>, String> tableColumn = new TableColumn<>(header);
+		//Action when its cell is called (get param and return a StringProperty)
+		//param is cellDataFeature, .getValue will get row object aka. HashMap<S,S>
+		tableColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(header)));
+		//What cell look like? TextFieldTableCell or CheckBoxTableCell ....
+		tableColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+		//Actin when Edit event is called
+		tableColumn.setOnEditCommit(
+       		 (CellEditEvent<Map<String, String>, String> t) -> 
+       		 {   
+       			 // get Tableview from event
+       			 // get current position and get the row ( a hashmap object)
+       			 // get value for hashmap with colname, and set value with newValue for textfield control
+       			 t.getTableView().getItems()
+       			 .get(t.getTablePosition().getRow())
+                 .put(t.getTablePosition().getTableColumn().getText(),t.getNewValue());
+       			 });
+		// Add column to table column collection
+		tableMetadata.getColumns().add(tableColumn);
+    	
+    }
+    
     
 }

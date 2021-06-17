@@ -83,6 +83,7 @@ public class PrimaryController {
     	}
     	
     	tv.setEditable(true);
+    	
     	TableColumn<sampleFile,String> firstNameCol = new TableColumn<sampleFile,String>("sample-id");
     	firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
     	firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -125,6 +126,7 @@ public class PrimaryController {
         		);
 
 		tv.getItems().addAll(data);
+		
     	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
 
     }

@@ -14,24 +14,34 @@
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
    </columnConstraints>
    <rowConstraints>
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-      <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
    </rowConstraints>
    <children>
-      <VBox alignment="CENTER" prefHeight="510.0" prefWidth="504.0" spacing="20.0" GridPane.rowIndex="2">
-         <children>
-            <TableView fx:id="tv" prefHeight="502.0" prefWidth="432.0" />
-         </children>
-         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
-      </VBox>
-      <HBox prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="1">
+      <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Button fx:id="primaryButton" onAction="#loadFile" text="Load" />
             <Button mnemonicParsing="false" onAction="#WriteTable" text="Export" />
          </children>
       </HBox>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" GridPane.rowIndex="1">
+        <tabs>
+          <Tab text="Menfiest">
+               <content>
+                  <TableView fx:id="tv" prefHeight="502.0" prefWidth="432.0" />
+               </content>
+          </Tab>
+          <Tab text="MetaData">
+               <content>
+                  <TableView prefHeight="200.0" prefWidth="200.0">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="C1" />
+                      <TableColumn prefWidth="75.0" text="C2" />
+                    </columns>
+                  </TableView>
+               </content>
+          </Tab>
+        </tabs>
+      </TabPane>
    </children>
 </GridPane>

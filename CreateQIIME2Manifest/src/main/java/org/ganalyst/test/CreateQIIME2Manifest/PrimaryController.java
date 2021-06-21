@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -18,6 +20,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
@@ -71,7 +75,6 @@ public class PrimaryController {
     @FXML
     private void loadFile() throws IOException {
     	
-
     	File f = new File("raw/");
     	if(!f.isDirectory()) {
     		System.exit(-1);
@@ -139,13 +142,16 @@ public class PrimaryController {
 		tv.getItems().addAll(data);	
     	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
     	
-    	HashMap<String, String> d2 = new HashMap<String, String>();
-    	d2.put("#SampleID", "S1");
-    	d2.put("Type","Category");
-    	data2.add(d2);
+    	// get data2 column1's value from "data" Col1
+    	for (sampleFile d1 : data) {
+    		//System.out.println(d1.getCol1());
+    		HashMap<String, String> d2 = new HashMap<String, String>();    	
+        	d2.put("#SampleID", d1.getCol1());
+        //	d2.put("Type","Category");
+        	data2.add(d2);
+    	}    	
     	addColumn("#SampleID");
     	tableMetadata.getItems().addAll(data2);
-
     }
     
     @FXML
@@ -153,7 +159,10 @@ public class PrimaryController {
     	//Lucas: set file name for saving.
     	FileChooser savefileName = new FileChooser();
     	savefileName.setTitle("Save as...");
-    	savefileName.setInitialFileName(null+".txt");
+    	
+    	Date dNow = new Date( );
+        SimpleDateFormat df = new SimpleDateFormat ("yyyyMMdd");
+    	savefileName.setInitialFileName(df.format(dNow)+"_manifest.txt");
     	File selectFile  = savefileName.showSaveDialog(null);
     	if(selectFile == null) return;
     	File txtfile = selectFile;
@@ -177,21 +186,29 @@ public class PrimaryController {
 	
     }
     
-//    @FXML
-//	TableView<Map<String,String>> tableMetadata;
-    
+
     @FXML
     private void btnAddCol() {
-    	//inputbox 
-    	
+    	//inputbox    	
     	TextInputDialog dialog = new TextInputDialog("Input dialog");
     	dialog.setTitle("Column Name");
     	dialog.setContentText("Please enter factor:");
     	Optional<String> result = dialog.showAndWait();
-    	if (result.isPresent()){  	
-        	for(Map<String,String> m :data2) {
-        		m.put(result.get(), "NA");
-        	}
+    	if (result.isPresent()){
+    		// Set foolproof mechanism : prevent users from setting the same column name 
+    		for(TableColumn tN : tableMetadata.getColumns()) {
+    			 if(tN.getText().equals(result.get())) {
+    				 Alert alert = new Alert(AlertType.WARNING);
+    				 alert.setTitle("Warning Dialog");
+    				 alert.setContentText("Column name is exists");
+    				 alert.showAndWait();
+    				 return;
+    			 }
+    		}
+    			for(Map<String,String> m :data2) {
+            		m.put(result.get(), "NA"); 
+            	}
+	
          	addColumn(result.get());
     	}
 
@@ -201,8 +218,6 @@ public class PrimaryController {
     
     
     private void addColumn(String colname) {
-    	// HashMap as a row object
-//    	ArrayList<Map<String, String>> valuesArray = new ArrayList<>();
     	tableMetadata.setEditable(true);
     	
     	//Create Column

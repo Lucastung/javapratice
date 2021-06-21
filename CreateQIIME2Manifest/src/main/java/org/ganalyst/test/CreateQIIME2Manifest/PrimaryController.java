@@ -158,8 +158,9 @@ public class PrimaryController {
         	d2.put("#SampleID", d1.getCol1());
         //	d2.put("Type","Category");
         	data2.add(d2);
-    	}    	
-    	addColumn("#SampleID");
+    	}
+    	//Lucas: change addColumn method with type setting
+    	addColumn("#SampleID","#Q2");
     	tableMetadata.getItems().addAll(data2);
     }
     
@@ -199,14 +200,14 @@ public class PrimaryController {
     @SuppressWarnings("unchecked")
 	@FXML
     private void btnAddCol() {
-    	//inputbox    	
+/*    	//inputbox    	
     	TextInputDialog dialog = new TextInputDialog("Input dialog");
     	dialog.setTitle("Column Name");
     	dialog.setContentText("Please enter factor:");
     	Optional<String> result = dialog.showAndWait();
     	
     	//http://tutorials.jenkov.com/javafx/combobox.html
-/*    	ComboBox comboBox = new ComboBox();
+    	ComboBox comboBox = new ComboBox();
     	comboBox.getItems().add("categorical");
     	comboBox.getItems().add("numeric");
     	comboBox.setEditable(true);
@@ -218,11 +219,44 @@ public class PrimaryController {
     	    System.out.println("   ComboBox.getValue(): " + comboBox.getValue());
     	});
 */    	
- 	
-    	if (result.isPresent()){
+    	
+    	//Lucas:create a dialog object
+    	Dialog<String[]> dialog = new Dialog<>();
+        dialog.setTitle("Dialog Test");
+        dialog.setHeaderText("Please specify…");
+        //Lucas: get pane from dialog
+        DialogPane dialogPane = dialog.getDialogPane();
+        //Lucas: setup button
+        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        //Lucas: Create control for dialog
+        TextField textField = new TextField("FactorName");
+        //Lucas: prepare ob-list for combobox
+        ObservableList<String> options = FXCollections.observableArrayList();
+        options.add("Category");
+        options.add("Numeric");        
+        //Lucas: Create combobox
+        ComboBox<String> comboBox = new ComboBox<>(options);        
+        comboBox.getSelectionModel().selectFirst();
+        //Lucas: setup pane in dialog, add new container Vbox, with two controls
+        dialogPane.setContent(new VBox(8, textField, comboBox));        
+        //Lucas: set method when button is pressed. 
+        dialog.setResultConverter((ButtonType button) -> {
+        	//Lucas: when button OK press, create a new string[] with value of txtField and combobox
+            if (button == ButtonType.OK) {
+                return new String[] {textField.getText(),comboBox.getValue()};
+            }
+            return null;
+        });
+        
+        //Lucas: result is optional, something like property. the result include String[] return from setResultConverter
+        Optional<String[]> result = dialog.showAndWait();
+     	if (result.isPresent()){
+     		//Lucas: get string[] from result
+     		
+    		String[] r = result.get();
     		// Set foolproof mechanism : prevent users from setting the same column name 
     		for(TableColumn tN : tableMetadata.getColumns()) {
-    			 if(tN.getText().equals(result.get())) {
+    			 if(tN.getText().equals(r[0])) {
     				 Alert alert = new Alert(AlertType.WARNING);
     				 alert.setTitle("Warning Dialog");
     				 alert.setContentText("Column name is exists");
@@ -231,10 +265,10 @@ public class PrimaryController {
     			 }
     		}
     			for(Map<String,String> m :data2) {
-            		m.put(result.get(), "NA"); 
+            		m.put(r[0], "NA"); 
             	}
 	
-         	addColumn(result.get());
+         	addColumn(r[0],r[1]);
     	}
 
     }
@@ -285,10 +319,13 @@ public class PrimaryController {
     }
 */
    
-    
-    private void addColumn(String colname) {
+    //Lucas: column type is recoreded in the hashtable for export
+    Hashtable<String,String> coltype = new Hashtable<String,String>();
+    //Lucas: change method => record column type when add a column
+    private void addColumn(String colname, String type) {
     	tableMetadata.setEditable(true);
-    	
+    	//Lucas: record col type
+    	coltype.put(colname, type);
     	//Create Column
     	String header = colname;
 		//Data source as Map<S,S>, show String value

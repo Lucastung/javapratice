@@ -14,6 +14,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Optional;
 
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,13 +24,20 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 public class PrimaryController {
 	public class sampleFile{		
@@ -187,13 +196,29 @@ public class PrimaryController {
     }
     
 
-    @FXML
+    @SuppressWarnings("unchecked")
+	@FXML
     private void btnAddCol() {
     	//inputbox    	
     	TextInputDialog dialog = new TextInputDialog("Input dialog");
     	dialog.setTitle("Column Name");
     	dialog.setContentText("Please enter factor:");
     	Optional<String> result = dialog.showAndWait();
+    	
+    	//http://tutorials.jenkov.com/javafx/combobox.html
+/*    	ComboBox comboBox = new ComboBox();
+    	comboBox.getItems().add("categorical");
+    	comboBox.getItems().add("numeric");
+    	comboBox.setEditable(true);
+    	comboBox.setOnAction((event) -> {
+    	    int selectedIndex = comboBox.getSelectionModel().getSelectedIndex();
+    	    Object selectedItem = comboBox.getSelectionModel().getSelectedItem();
+
+    	    System.out.println("Selection made: [" + selectedIndex + "] " + selectedItem);
+    	    System.out.println("   ComboBox.getValue(): " + comboBox.getValue());
+    	});
+*/    	
+ 	
     	if (result.isPresent()){
     		// Set foolproof mechanism : prevent users from setting the same column name 
     		for(TableColumn tN : tableMetadata.getColumns()) {
@@ -214,8 +239,52 @@ public class PrimaryController {
 
     }
     
-    
-    
+    //老師建議參考文件 => https://stackoverflow.com/questions/44147595/get-more-than-two-inputs-in-a-javafx-dialog
+/*    public class DialogTest extends Application {
+    	@Override
+        public void start(Stage primaryStage) {
+        	Dialog<Results> dialog = new Dialog<>();
+            dialog.setTitle("Dialog Test");
+            dialog.setHeaderText("Please specify…");
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            TextField textField = new TextField("Name");
+//          DatePicker datePicker = new DatePicker(LocalDate.now());
+            ObservableList<Venue> options = FXCollections.observableArrayList(Venue.values());
+            ComboBox<Venue> comboBox = new ComboBox<>(options);
+            comboBox.getSelectionModel().selectFirst();
+            dialogPane.setContent(new VBox(8, textField, comboBox));
+            Platform.runLater(textField::requestFocus);
+            dialog.setResultConverter((ButtonType button) -> {
+            	if (button == ButtonType.OK) {
+            		return new Results(textField.getText(), comboBox.getValue());
+            	}
+            	return null;
+            });
+            Optional<Results> optionalResult = dialog.showAndWait();
+            optionalResult.ifPresent((Results results) -> {
+                System.out.println(
+                    results.text + " " + results.venue);
+            });
+        }
+        private enum Venue {Here, There, Elsewhere}
+        private class Results {
+
+            String text;
+            Venue venue;
+
+            public Results(String name, Venue venue) {
+                this.text = name;
+                this.venue = venue;
+            }
+        }
+        public void main(String[] args) {
+            launch(args);
+        }
+    	
+    }
+*/
+   
     
     private void addColumn(String colname) {
     	tableMetadata.setEditable(true);
@@ -244,6 +313,8 @@ public class PrimaryController {
 		tableMetadata.getColumns().add(tableColumn);
     	
     }
+    
+    
     
     
 }

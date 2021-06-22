@@ -10,17 +10,18 @@
 <?import javafx.geometry.Insets?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.gapp.hsujc.rna.CreateRnaManifest.PrimaryController">
-   <left>
-      <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="LoadFile" mnemonicParsing="false" onAction="#loadfile" text="Load" />
-         </children>
-      </VBox>
-   </left>
    <center>
       <TableView fx:id="tv" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
    </center>
    <right>
       <TextArea fx:id="outResult" prefHeight="400.0" prefWidth="239.0" BorderPane.alignment="CENTER" />
    </right>
+   <top>
+      <HBox prefHeight="29.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="LoadFile" mnemonicParsing="false" onAction="#loadfile" text="Load" />
+            <Button mnemonicParsing="false" onAction="#btnAddCol" text="Export" />
+         </children>
+      </HBox>
+   </top>
 </BorderPane>

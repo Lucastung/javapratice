@@ -76,7 +76,6 @@ public class PrimaryController {
 	TableView<sampleFile> tv;
 	
 	@FXML
-//	TableView<sampleFile> tableMetadata;
 	TableView<Map<String,String>> tableMetadata;
 	ObservableList<sampleFile> data = FXCollections.observableArrayList();
 	ObservableList<Map<String,String>> data2 = FXCollections.observableArrayList();
@@ -153,10 +152,8 @@ public class PrimaryController {
     	
     	// get data2 column1's value from "data" Col1
     	for (sampleFile d1 : data) {
-    		//System.out.println(d1.getCol1());
     		HashMap<String, String> d2 = new HashMap<String, String>();    	
         	d2.put("#SampleID", d1.getCol1());
-        //	d2.put("Type","Category");
         	data2.add(d2);
     	}
     	//Lucas: change addColumn method with type setting
@@ -193,34 +190,37 @@ public class PrimaryController {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		
+		//Export Metadata file
+		FileChooser saveMeatafile = new FileChooser();
+		saveMeatafile.setTitle("Save as...");
+		saveMeatafile.setInitialFileName(df.format(dNow)+"_metadata.tsv");
+    	File selectFile2  = saveMeatafile.showSaveDialog(null);
+    	if(selectFile2 == null) return;
+    	File tsvfile = selectFile2;
+    	BufferedWriter bw;
+    	try {
+			bw = new BufferedWriter(new FileWriter(tsvfile));
+			bw.append("#SampleID"+"\n"+"#q2:types");
+			ObservableList<Map<String,String>> Metadata = tableMetadata.getItems();
+			for (Map<String,String> mf : Metadata) {	
+	    		bw.append("\n"+mf.put("#SampleID", "#q2:types"));
+	    		
+	    	}
+	    	bw.flush();
+	    	bw.close();
+			
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
 	
     }
     
 
     @SuppressWarnings("unchecked")
 	@FXML
-    private void btnAddCol() {
-/*    	//inputbox    	
-    	TextInputDialog dialog = new TextInputDialog("Input dialog");
-    	dialog.setTitle("Column Name");
-    	dialog.setContentText("Please enter factor:");
-    	Optional<String> result = dialog.showAndWait();
-    	
-    	//http://tutorials.jenkov.com/javafx/combobox.html
-    	ComboBox comboBox = new ComboBox();
-    	comboBox.getItems().add("categorical");
-    	comboBox.getItems().add("numeric");
-    	comboBox.setEditable(true);
-    	comboBox.setOnAction((event) -> {
-    	    int selectedIndex = comboBox.getSelectionModel().getSelectedIndex();
-    	    Object selectedItem = comboBox.getSelectionModel().getSelectedItem();
-
-    	    System.out.println("Selection made: [" + selectedIndex + "] " + selectedItem);
-    	    System.out.println("   ComboBox.getValue(): " + comboBox.getValue());
-    	});
-*/    	
-    	
-    	//Lucas:create a dialog object
+    private void btnAddCol() { 	
+    	//Lucas:create a dialog object => https://stackoverflow.com/questions/44147595/get-more-than-two-inputs-in-a-javafx-dialog
     	Dialog<String[]> dialog = new Dialog<>();
         dialog.setTitle("Dialog Test");
         dialog.setHeaderText("Please specify…");
@@ -229,7 +229,7 @@ public class PrimaryController {
         //Lucas: setup button
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         //Lucas: Create control for dialog
-        TextField textField = new TextField("FactorName");
+        TextField textField = new TextField("Input Factor Name");
         //Lucas: prepare ob-list for combobox
         ObservableList<String> options = FXCollections.observableArrayList();
         options.add("Category");
@@ -273,52 +273,7 @@ public class PrimaryController {
 
     }
     
-    //老師建議參考文件 => https://stackoverflow.com/questions/44147595/get-more-than-two-inputs-in-a-javafx-dialog
-/*    public class DialogTest extends Application {
-    	@Override
-        public void start(Stage primaryStage) {
-        	Dialog<Results> dialog = new Dialog<>();
-            dialog.setTitle("Dialog Test");
-            dialog.setHeaderText("Please specify…");
-            DialogPane dialogPane = dialog.getDialogPane();
-            dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-            TextField textField = new TextField("Name");
-//          DatePicker datePicker = new DatePicker(LocalDate.now());
-            ObservableList<Venue> options = FXCollections.observableArrayList(Venue.values());
-            ComboBox<Venue> comboBox = new ComboBox<>(options);
-            comboBox.getSelectionModel().selectFirst();
-            dialogPane.setContent(new VBox(8, textField, comboBox));
-            Platform.runLater(textField::requestFocus);
-            dialog.setResultConverter((ButtonType button) -> {
-            	if (button == ButtonType.OK) {
-            		return new Results(textField.getText(), comboBox.getValue());
-            	}
-            	return null;
-            });
-            Optional<Results> optionalResult = dialog.showAndWait();
-            optionalResult.ifPresent((Results results) -> {
-                System.out.println(
-                    results.text + " " + results.venue);
-            });
-        }
-        private enum Venue {Here, There, Elsewhere}
-        private class Results {
 
-            String text;
-            Venue venue;
-
-            public Results(String name, Venue venue) {
-                this.text = name;
-                this.venue = venue;
-            }
-        }
-        public void main(String[] args) {
-            launch(args);
-        }
-    	
-    }
-*/
-   
     //Lucas: column type is recoreded in the hashtable for export
     Hashtable<String,String> coltype = new Hashtable<String,String>();
     //Lucas: change method => record column type when add a column

@@ -157,7 +157,7 @@ public class PrimaryController {
         	data2.add(d2);
     	}
     	//Lucas: change addColumn method with type setting
-    	addColumn("#SampleID","#Q2");
+    	addColumn("#SampleID","#q2:type");
     	tableMetadata.getItems().addAll(data2);
     }
     
@@ -201,11 +201,28 @@ public class PrimaryController {
     	BufferedWriter bw;
     	try {
 			bw = new BufferedWriter(new FileWriter(tsvfile));
-			bw.append("#SampleID"+"\n"+"#q2:types");
+			
+			//Lucas: prepare column header and type			
+			tableMetadata.getColumns();
+			String headerline = "";
+			String typeline ="";
+			//Lucas: append column header, type one by one
+			for(TableColumn t:tableMetadata.getColumns()) {
+				//Lucas: combine header
+				String colname = t.getText();
+				headerline += colname+"\t";
+				//Lucas: combine type 
+				typeline +=coltype.get(colname)+"\t";
+			}
+			bw.append(headerline.trim()+"\n"+typeline.trim());
+			//Lucas: append data row one by one			
 			ObservableList<Map<String,String>> Metadata = tableMetadata.getItems();
-			for (Map<String,String> mf : Metadata) {	
-	    		bw.append("\n"+mf.put("#SampleID", "#q2:types"));
-	    		
+			//Lucas: Define key set to index value
+			String[] hkeys = headerline.trim().split("\t");			
+			for (Map<String,String> mf : Metadata) {
+				String dataline ="";
+	    		for(String k : hkeys) dataline += mf.get(k)+"\t";	    		
+	    		bw.append("\n"+dataline.trim());
 	    	}
 	    	bw.flush();
 	    	bw.close();

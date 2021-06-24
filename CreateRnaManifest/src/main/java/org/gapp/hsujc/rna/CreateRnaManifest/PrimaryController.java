@@ -1,8 +1,10 @@
 package org.gapp.hsujc.rna.CreateRnaManifest;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -10,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -33,7 +36,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-public class PrimaryController {
+public class PrimaryController implements Initializable  {
 	@FXML TextArea outResult = new TextArea();
 	@FXML Button LoadFile = new Button();
 	@FXML TableView<sampleFiles> tv;
@@ -67,95 +70,11 @@ public class PrimaryController {
     File[] filename;  
     outResult.setWrapText(true);
     //left btn menu
-    ContextMenu contextMenu = new ContextMenu();
-    MenuItem menuItem1 = new MenuItem("Add to control group");
-    MenuItem menuItem2 = new MenuItem("Add to experiment group");
-    MenuItem menuItem3 = new MenuItem("Add to ....");
-    menuItem1.setOnAction((event) -> {
-    	System.out.println(tv.getSelectionModel().getSelectedItems());
-    	ObservableList<sampleFiles> seledata = FXCollections.observableArrayList();
-    	tv.getSelectionModel().getSelectedItems();
-    	//seledata.add(new sampleFiles(tv.getSelectionModel().getSelectedItems(),"con"));
-    	//tv.getItems().add(new sampleFiles(tv.getSelectionModel().getSelectedItems(),"con"));
-    });
-    
-    
-    menuItem3.setOnAction((event) -> {
-    	/**System.out.println("Choice 3 clicked!");
-    	TextInputDialog td = new TextInputDialog("enter group name");
-    	td.setHeaderText("enter group name");
-    	td.show();
-    	**/
-    	Dialog<String[]> dialog = new Dialog<>();
-	    dialog.setTitle("Group setting");
-	    dialog.setHeaderText("Please enter group name");
-	    //Lucas: get pane from dialog
-	    DialogPane dialogPane = dialog.getDialogPane();
-	    //Lucas: setup button
-	    dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-	    //Lucas: Create control for dialog
-	    TextField textField = new TextField("GroupName");
-	    /**Lucas: prepare ob-list for combobox
-	    ObservableList<String> options = FXCollections.observableArrayList();
-	    options.add("Exp1");
-	    options.add("Exp2");        
-	    //Lucas: Create combobox
-	    ComboBox<String> comboBox = new ComboBox<>(options);        
-	    comboBox.getSelectionModel().selectFirst();
-	    //Lucas: setup pane in dialog, add new container Vbox, with two controls
-	    dialogPane.setContent(new VBox(8, textField, comboBox));    	  
-	     **/
-	    dialogPane.setContent(new VBox(8, textField));
-	    dialog.show();
-    });
-    //contextMenu.getItems().addAll(menuItem1,menuItem2,menuItem3);
-    contextMenu.getItems().add(menuItem1);
-    contextMenu.getItems().add(menuItem2);
-    contextMenu.getItems().add(menuItem3);
-    tv.setContextMenu(contextMenu);
-    //test code for textarea
-    ContextMenu contextMenu2 = new ContextMenu();
-    MenuItem menuItem4 = new MenuItem("To control group");
-    MenuItem menuItem5 = new MenuItem("To experiment group");
-    MenuItem menuItem6 = new MenuItem("To ....");
-    menuItem6.setOnAction((event) -> {
-        System.out.println("Choice 3 clicked!");
-    });
-    contextMenu2.getItems().add(menuItem4);
-    contextMenu2.getItems().add(menuItem5);
-    contextMenu2.getItems().add(menuItem6);
-    outResult.setContextMenu(contextMenu2);
+
     //
     //
     ObservableList<sampleFiles> data = FXCollections.observableArrayList();
-    TableColumn<sampleFiles,String> firstNameCol = new TableColumn<sampleFiles,String>("Sample");
-    TableColumn<sampleFiles,String> secondNameCol = new TableColumn<sampleFiles,String>("Group");
-    tv.setEditable(true);
-    tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
-    firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-    firstNameCol.setOnEditCommit(
-    		new EventHandler<CellEditEvent<sampleFiles, String>>() {
-    			@Override
-    			public void handle(CellEditEvent<sampleFiles, String> t) {
-    				((sampleFiles) t.getTableView().getItems().get(
-    						t.getTablePosition().getRow())
-    				        ).setCol1(t.getNewValue());
-    			}
-    		});
-    secondNameCol.setCellValueFactory(new PropertyValueFactory("col2"));
-    secondNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-    secondNameCol.setOnEditCommit(
-    		new EventHandler<CellEditEvent<sampleFiles, String>>() {
-    			@Override
-    			public void handle(CellEditEvent<sampleFiles, String> t) {
-    				((sampleFiles) t.getTableView().getItems().get(
-    						t.getTablePosition().getRow())
-    				        ).setCol1(t.getNewValue());
-    			}
-    		});
-    tv.getColumns().add(firstNameCol);
-    tv.getColumns().add(secondNameCol);
+
     //inputdiolog
     if (folder != null)
     {
@@ -203,26 +122,6 @@ public class PrimaryController {
     **/
     @FXML
     private void btnAddCol() {
-    	/*    	//inputbox    	
-    	    	TextInputDialog dialog = new TextInputDialog("Input dialog");
-    	    	dialog.setTitle("Column Name");
-    	    	dialog.setContentText("Please enter factor:");
-    	    	Optional<String> result = dialog.showAndWait();
-    	    	
-    	    	//http://tutorials.jenkov.com/javafx/combobox.html
-    	    	ComboBox comboBox = new ComboBox();
-    	    	comboBox.getItems().add("categorical");
-    	    	comboBox.getItems().add("numeric");
-    	    	comboBox.setEditable(true);
-    	    	comboBox.setOnAction((event) -> {
-    	    	    int selectedIndex = comboBox.getSelectionModel().getSelectedIndex();
-    	    	    Object selectedItem = comboBox.getSelectionModel().getSelectedItem();
-
-    	    	    System.out.println("Selection made: [" + selectedIndex + "] " + selectedItem);
-    	    	    System.out.println("   ComboBox.getValue(): " + comboBox.getValue());
-    	    	});
-    	*/    	
-    	    	
     	    	//Lucas:create a dialog object
     	    	Dialog<String[]> dialog = new Dialog<>();
     	        dialog.setTitle("Dialog Test");
@@ -254,4 +153,109 @@ public class PrimaryController {
     	        
 
     	    }
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		//setup tableview
+	    TableColumn<sampleFiles,String> firstNameCol = new TableColumn<sampleFiles,String>("Sample");
+	    TableColumn<sampleFiles,String> secondNameCol = new TableColumn<sampleFiles,String>("Group");
+	    tv.setEditable(true);
+	    tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+	    firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
+	    firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+	    firstNameCol.setOnEditCommit(
+	    		new EventHandler<CellEditEvent<sampleFiles, String>>() {
+	    			@Override
+	    			public void handle(CellEditEvent<sampleFiles, String> t) {
+	    				((sampleFiles) t.getTableView().getItems().get(
+	    						t.getTablePosition().getRow())
+	    				        ).setCol1(t.getNewValue());
+	    			}
+	    		});
+	    secondNameCol.setCellValueFactory(new PropertyValueFactory("col2"));
+	    secondNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+	    secondNameCol.setOnEditCommit(
+	    		new EventHandler<CellEditEvent<sampleFiles, String>>() {
+	    			@Override
+	    			public void handle(CellEditEvent<sampleFiles, String> t) {
+	    				((sampleFiles) t.getTableView().getItems().get(
+	    						t.getTablePosition().getRow())
+	    				        ).setCol1(t.getNewValue());
+	    			}
+	    		});
+	    tv.getColumns().add(firstNameCol);
+	    tv.getColumns().add(secondNameCol);
+	    
+	    //Setup context menu for tv
+	    ContextMenu contextMenu = new ContextMenu();
+	    MenuItem menuItem1 = new MenuItem("Add to control group");
+	    MenuItem menuItem2 = new MenuItem("Add to experiment group");
+	    MenuItem menuItem3 = new MenuItem("Add to ....");
+	    //Setup item1 for control
+	    menuItem1.setOnAction((event) -> {
+	    	ObservableList<sampleFiles> mselect = tv.getSelectionModel().getSelectedItems();
+	    	for (sampleFiles sf : mselect) {
+	    		sf.setCol2("Control");
+	    	}
+	    	tv.refresh();
+	    });
+	    //Setup item2 for test
+	    menuItem2.setOnAction((event) -> {
+	    	ObservableList<sampleFiles> mselect = tv.getSelectionModel().getSelectedItems();
+	    	for (sampleFiles sf : mselect) {
+	    		sf.setCol2("Test");
+	    	}
+	    	tv.refresh();
+	    });
+	    
+	    menuItem3.setOnAction((event) -> {
+	    	Dialog<String[]> dialog = new Dialog<>();
+		    dialog.setTitle("Group setting");
+		    dialog.setHeaderText("Please enter sample type");
+		    DialogPane dialogPane = dialog.getDialogPane();
+		    dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+		    TextField textField = new TextField("Group?");
+		    dialogPane.setContent(new VBox(8, textField));
+
+	        //Lucas: set method when button is pressed. 
+	        dialog.setResultConverter((ButtonType button) -> {
+	        	//Lucas: when button OK press, create a new string[] with value of txtField and combobox
+	            if (button == ButtonType.OK) {
+	                return new String[] {textField.getText()};
+	            }
+	            return null;
+	        });
+	        
+	        //Lucas: result is optional, something like property. the result include String[] return from setResultConverter
+	        Optional<String[]> result = dialog.showAndWait();
+	        ObservableList<sampleFiles> mselect = tv.getSelectionModel().getSelectedItems();
+	     	if (result.isPresent()){
+	     		//Lucas: get string[] from result	     		
+	    		String[] r = result.get();
+	    		for (sampleFiles sf : mselect) {
+		    		sf.setCol2(r[0]);
+		    	}
+	     	}
+	    	tv.refresh();
+	    });
+	    //contextMenu.getItems().addAll(menuItem1,menuItem2,menuItem3);
+	    contextMenu.getItems().add(menuItem1);
+	    contextMenu.getItems().add(menuItem2);
+	    contextMenu.getItems().add(menuItem3);
+	    tv.setContextMenu(contextMenu);
+	    
+	    //test code for textarea
+	    ContextMenu contextMenu2 = new ContextMenu();
+	    MenuItem menuItem4 = new MenuItem("To control group");
+	    MenuItem menuItem5 = new MenuItem("To experiment group");
+	    MenuItem menuItem6 = new MenuItem("To ....");
+	    menuItem6.setOnAction((event) -> {
+	        System.out.println("Choice 3 clicked!");
+	    });
+	    contextMenu2.getItems().add(menuItem4);
+	    contextMenu2.getItems().add(menuItem5);
+	    contextMenu2.getItems().add(menuItem6);
+	    outResult.setContextMenu(contextMenu2);
+	    
+		
+	}
 }

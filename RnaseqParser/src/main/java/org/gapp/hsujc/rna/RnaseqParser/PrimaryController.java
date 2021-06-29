@@ -41,11 +41,8 @@ public class PrimaryController implements Initializable {
 	@FXML Button ExportManifest = new Button();
 	//@FXML Button exportdata = new Button();
     @FXML TableView<Map<String,String>> tv;
-    
-    //fdata for store (sample , file path)
-    Hashtable<String,String> fdata = new Hashtable<String,String>();
-    
-	//environment setting
+
+ 	//environment setting
     @Override
     public void initialize(URL location, ResourceBundle resources) {
     	
@@ -54,6 +51,9 @@ public class PrimaryController implements Initializable {
     	addColumn("Group");
     	tv.setEditable(true);
     	tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        ObservableList<Map<String,String>> data = FXCollections.observableArrayList();
+    	tv.getItems().addAll(data);		
+
 	    //Setup context menu for tv
 	    ContextMenu contextMenu = new ContextMenu();
 	    MenuItem menuItem1 = new MenuItem("Add to control group");
@@ -114,14 +114,7 @@ public class PrimaryController implements Initializable {
 	    menuItem4.setOnAction((event) -> {
 	    	ObservableList<Map<String,String>> mselect = tv.getSelectionModel().getSelectedItems();
 	    	tv.getItems().removeAll(mselect);
-	    	tv.refresh();
-	    	fdata.clear();
-	    	//reflash fdata
-	    	for(int i = 0; i < tv.getItems().size(); i ++) {
-	    		String fname = tv.getItems().get(i).get("Path");
-	    		String sname = tv.getItems().get(i).get("SampleID");
-	    		fdata.put(sname, fname);
-	    	}	    	
+	    	tv.refresh();	    	
 	    });
 	}
 	private void addColumn(String colname) {    	
@@ -151,13 +144,11 @@ public class PrimaryController implements Initializable {
 	
 	@FXML
     private void loadfile(ActionEvent e) {
-		
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 	    directoryChooser.setInitialDirectory(new File("."));
 	    directoryChooser.setTitle ("Choose RNAseq Result Folder");
 	    File folder = directoryChooser.showDialog(null);
 	    File[] filename;  
-	    ObservableList<Map<String,String>> data = FXCollections.observableArrayList();
 	    //load filename	    
 	    if (folder == null || !folder.isDirectory()) {
 	    	System.out.println("no folder selected!!");
@@ -166,19 +157,28 @@ public class PrimaryController implements Initializable {
 	    	filename=folder.listFiles();
 	    }
 	    //load file list
+	    ObservableList<Map<String,String>> data = tv.getItems();
+
 	    String warning = "Sample ";
-		for (int i = 0; i< folder.listFiles().length; i++) {
-			String fname = filename[i].toString().split(folder.getName()+"/")[1];
-			String sname = fname.split(".genes.results")[0];
-			if(!fdata.containsKey(sname)) {
-				fdata.put(sname, fname);
-				HashMap<String, String> d2 = new HashMap<String, String>();
-				d2.put("SampleID", sname);
-				d2.put("Path", filename[i].toString());
-				data.add(d2);
-			}else {
-				warning += sname + ","; 			    			
+		for (int i = 0; i< filename.length; i++) {
+			String fname = filename[i].getName();
+			//String fname = filename[i].toString().split(folder.getName()+"/")[1];
+			String sname = fname.replace(".genes.results", ""); //fname.split(".genes.results")[0];
+			
+			boolean haveSample = false;
+			for( Map<String,String> hm : data ) {
+				if(hm.containsKey("SampleID") && hm.get("SampleID").equals(sname)) {
+					warning += sname + ",";
+					haveSample = true;
+					continue;
+				}
 			}
+			if(haveSample) continue;
+			
+			HashMap<String, String> d2 = new HashMap<String, String>();
+			d2.put("SampleID", sname);
+			d2.put("Path", filename[i].toString());
+			data.add(d2);
 		}
 		if(warning != "Sample ") {
 			Alert alert = new Alert(AlertType.INFORMATION);
@@ -188,7 +188,6 @@ public class PrimaryController implements Initializable {
 			alert.setContentText(s);
 			alert.show();  
 		}
-    	tv.getItems().addAll(data);		
 	}
 	@FXML
     private void export(ActionEvent e) {

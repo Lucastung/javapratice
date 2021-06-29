@@ -1,0 +1,5 @@
+C2-cTAL30-1.genes.results	Con
+U2-CCD30-2.genes.results	Test
+U4-CCD30-1.genes.results	Con
+C1-CCD30-1.genes.results	Test
+U1-cTAL30-1.genes.results	Test

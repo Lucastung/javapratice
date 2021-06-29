@@ -15,6 +15,7 @@
          <children>
             <Button fx:id="LoadFile" mnemonicParsing="false" onAction="#loadfile" text="LoadFile" />
             <Button fx:id="ExportManifest" mnemonicParsing="false" onAction="#export" text="Manifest" />
+            <Button fx:id="Exportdata" mnemonicParsing="false" onAction="#merge" text="Merge" />
          </children>
       </HBox>
    </top>

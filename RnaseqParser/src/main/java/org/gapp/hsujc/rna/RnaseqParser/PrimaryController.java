@@ -6,9 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -39,7 +41,7 @@ import javafx.stage.FileChooser;
 public class PrimaryController implements Initializable {
 	@FXML Button LoadFile = new Button();
 	@FXML Button ExportManifest = new Button();
-	//@FXML Button exportdata = new Button();
+	@FXML Button Exportdata = new Button();
     @FXML TableView<Map<String,String>> tv;
 
  	//environment setting
@@ -49,7 +51,10 @@ public class PrimaryController implements Initializable {
 		//Set default table
     	addColumn("SampleID");
     	addColumn("Group");
-    	tv.setEditable(true);
+    	//addColumn("Path");  //store path
+    	//addColumn("fname");  //store file name with .gene.result
+    	
+    	//tv.setEditable(true);
     	tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         ObservableList<Map<String,String>> data = FXCollections.observableArrayList();
     	tv.getItems().addAll(data);		
@@ -162,7 +167,6 @@ public class PrimaryController implements Initializable {
 	    String warning = "Sample ";
 		for (int i = 0; i< filename.length; i++) {
 			String fname = filename[i].getName();
-			//String fname = filename[i].toString().split(folder.getName()+"/")[1];
 			String sname = fname.replace(".genes.results", ""); //fname.split(".genes.results")[0];
 			
 			boolean haveSample = false;
@@ -177,7 +181,8 @@ public class PrimaryController implements Initializable {
 			
 			HashMap<String, String> d2 = new HashMap<String, String>();
 			d2.put("SampleID", sname);
-			d2.put("Path", filename[i].toString());
+			d2.put("Path", filename[i].getAbsolutePath());
+			d2.put("fname", fname);
 			data.add(d2);
 		}
 		if(warning != "Sample ") {
@@ -225,9 +230,9 @@ public class PrimaryController implements Initializable {
 		try {
 			bf = new BufferedWriter(new FileWriter(txtfile));
 	    	ObservableList<Map<String, String>> tvdata = tv.getItems();
-	    	bf.append(tvdata.get(0).get("SampleID")+"\t"+tvdata.get(0).get("Group"));
+	    	bf.append(tvdata.get(0).get("fname")+"\t"+tvdata.get(0).get("Group"));
 	    	for(int i =1; i < tvdata.size();i++) {
-	    		bf.append("\n"+tvdata.get(i).get("SampleID")+"\t"+tvdata.get(i).get("Group")); 	
+	    		bf.append("\n"+tvdata.get(i).get("fname")+"\t"+tvdata.get(i).get("Group")); 	
 	    	}
 	    	/*This will add "\n" in end of file
 	    	 * for (Map<String, String> sf : tvdata) {	
@@ -245,9 +250,47 @@ public class PrimaryController implements Initializable {
 		alert.setContentText(s);
 		alert.show();
 		}
+	@FXML
 	private void merge(ActionEvent e) {
-		FileProc model = new FileProc();
-		//model.Merge_RowID(hargs.get("-o"),hargs.get("-r"),hargs.get("-d"),ifs);
+		ObservableList<Map<String,String>> mselect = tv.getItems();
+		FileChooser savefileName = new FileChooser();
+    	savefileName.setTitle("Save as...");   	
+    	Date dNow = new Date( );
+        SimpleDateFormat df = new SimpleDateFormat ("yyyyMMdd");
+    	savefileName.setInitialFileName(df.format(dNow)+"_merge");
+    	File selectFile  = savefileName.showSaveDialog(null);
+    	if(selectFile == null) return;
+    	String output = selectFile.getAbsoluteFile().toString();  	
+	    String datacols = "expected_count,TPM,FPKM";
+	    String rowidcols = "gene_id";
+	    List<File> ifs = new ArrayList<File>();
+	    if(mselect.isEmpty()) {
+	    	Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			//alert.setHeaderText("Information Alert");
+			String s = "Please select dataset first.";
+			alert.setContentText(s);
+			alert.show();
+	    	System.out.println("No data");
+	    }else {
+	    	for (Map<String,String> sf : mselect) {
+    		ifs.add(new File(sf.get("Path")));
+    	}
+	    }
+FileProc model = new FileProc();
+		
+		try {
+			model.Merge_RowID(output,rowidcols,datacols,ifs);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("File Saving");
+		//alert.setHeaderText("Information Alert");
+		String s = "The file was saved.";
+		alert.setContentText(s);
+		alert.show();
 	}
 	
 	

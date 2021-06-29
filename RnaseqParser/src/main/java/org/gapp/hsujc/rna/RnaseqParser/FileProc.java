@@ -80,7 +80,7 @@ public class FileProc {
 		//output file
 		
 		for(int ei = 0;ei<dids.length;ei++) {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(_output+"_"+dids[ei]));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(_output+"_"+dids[ei]+".txt"));
 			bw.write(_rowidcols.replace(",","\t")+filelist);
 			for(String k:join.keySet()) {
 				bw.write("\n"+ k.trim());
@@ -91,7 +91,7 @@ public class FileProc {
 			}
 			bw.flush();
 			bw.close();
-			System.out.println("Export "+ _output+"_"+dids[ei]);
+			System.out.println("Export "+ _output+"_"+dids[ei]+".txt");
 		}
 	}
 	
@@ -137,7 +137,7 @@ public class FileProc {
 			br.close();					
 		}
 		//output file
-		BufferedWriter bw = new BufferedWriter(new FileWriter(_output));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(_output+".txt"));
 		bw.write("gene_id"+filelist);
 		for(String k:join.keySet()) {
 			bw.write("\n"+ k.trim());

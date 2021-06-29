@@ -26,8 +26,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -100,6 +102,20 @@ public class PrimaryController {
 					direction = "reverse";
 				}
 				sampleFile newRow = new sampleFile(name,path,direction);
+				//以for loop check file name/path have repeat
+/*				for (int n=0; n<name.length(); n++) {
+					if (name.equals(newRow.getCol1())) {
+						data.add(newRow);
+					}else {
+						Alert alert = new Alert(AlertType.WARNING);
+	    				alert.setTitle("Warning Dialog");
+	    				alert.setContentText("The sample name is exists!");
+	    				alert.showAndWait();
+	    				return; 
+					}
+					
+				}
+*/				
 				data.add(newRow);
     		}
     	}
@@ -157,7 +173,7 @@ public class PrimaryController {
         	data2.add(d2);
     	}
     	//Lucas: change addColumn method with type setting
-    	addColumn("#SampleID","#q2:type");
+    	addColumn("#SampleID","#q2:types");
     	tableMetadata.getItems().addAll(data2);
     }
     
@@ -200,7 +216,7 @@ public class PrimaryController {
     	File tsvfile = selectFile2;
     	BufferedWriter bw;
     	try {
-			bw = new BufferedWriter(new FileWriter(tsvfile));
+    		StringBuilder sb = new StringBuilder(); 
 			
 			//Lucas: prepare column header and type			
 			tableMetadata.getColumns();
@@ -214,16 +230,32 @@ public class PrimaryController {
 				//Lucas: combine type 
 				typeline +=coltype.get(colname)+"\t";
 			}
-			bw.append(headerline.trim()+"\n"+typeline.trim());
+			sb.append(headerline.trim()+"\n"+typeline.trim());
 			//Lucas: append data row one by one			
 			ObservableList<Map<String,String>> Metadata = tableMetadata.getItems();
 			//Lucas: Define key set to index value
-			String[] hkeys = headerline.trim().split("\t");			
+			String[] hkeys = headerline.trim().split("\t");
+			String[] tkeys = typeline.trim().split("\t");
 			for (Map<String,String> mf : Metadata) {
 				String dataline ="";
-	    		for(String k : hkeys) dataline += mf.get(k)+"\t";	    		
-	    		bw.append("\n"+dataline.trim());
+				for(int i=1; i<hkeys.length ; i++ ) {
+					//Prevent the cell value does not match the type
+					if (tkeys[i].equals("Category")) {
+						dataline += mf.get(hkeys[i])+"\t";
+					}else if (tkeys[i].equals("Numeric") && mf.get(hkeys[i]).matches("-?\\d+(\\.\\d+)?")) {
+						dataline += mf.get(hkeys[i])+"\t";
+					}else  {
+						Alert alert = new Alert(AlertType.WARNING);
+	    				alert.setTitle("Warning Dialog");
+	    				alert.setContentText("The cell value does not match the type!!");
+	    				alert.showAndWait();
+	    				return;
+					}
+				}	    		
+	    		sb.append("\n"+mf.put("#SampleID","#q2:types")+"\t"+dataline.trim());
 	    	}
+			bw = new BufferedWriter(new FileWriter(tsvfile));
+			bw.append(sb).toString();
 	    	bw.flush();
 	    	bw.close();
 			
@@ -234,7 +266,6 @@ public class PrimaryController {
     }
     
 
-    @SuppressWarnings("unchecked")
 	@FXML
     private void btnAddCol() { 	
     	//Lucas:create a dialog object => https://stackoverflow.com/questions/44147595/get-more-than-two-inputs-in-a-javafx-dialog
@@ -268,8 +299,7 @@ public class PrimaryController {
         //Lucas: result is optional, something like property. the result include String[] return from setResultConverter
         Optional<String[]> result = dialog.showAndWait();
      	if (result.isPresent()){
-     		//Lucas: get string[] from result
-     		
+     		//Lucas: get string[] from result    		
     		String[] r = result.get();
     		// Set foolproof mechanism : prevent users from setting the same column name 
     		for(TableColumn tN : tableMetadata.getColumns()) {
@@ -320,7 +350,26 @@ public class PrimaryController {
        			 });
 		// Add column to table column collection
 		tableMetadata.getColumns().add(tableColumn);
-    	
+				
+		//Set right mouse button
+		ContextMenu contextMenu = new ContextMenu();
+	    MenuItem menuItem1 = new MenuItem("Delete Column");
+	    menuItem1.setOnAction((event) -> {
+//	    	contextMenu.getItems().remove(tableColumn.getText());
+//	    	return;
+	    	ObservableList<Map<String, String>> selecolum = tableMetadata.getSelectionModel().getSelectedItems();
+	    	for (Map<String, String> sc : selecolum) {
+	    		
+	    		sc.get(tableColumn.getText().replace(tableColumn.getText(), null));
+	    	}
+	    	
+	    	tableMetadata.refresh();
+	    	
+	    });
+	    contextMenu.getItems().add(menuItem1);  
+        tableMetadata.setContextMenu(contextMenu);
+	    
+	    
     }
     
     

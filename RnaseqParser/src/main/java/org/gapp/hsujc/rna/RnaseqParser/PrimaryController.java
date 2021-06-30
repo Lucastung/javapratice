@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,8 +39,7 @@ import javafx.stage.FileChooser;
 
 public class PrimaryController implements Initializable {
 	@FXML Button LoadFile = new Button();
-	@FXML Button ExportManifest = new Button();
-	@FXML Button Exportdata = new Button();
+	@FXML Button Export = new Button();
     @FXML TableView<Map<String,String>> tv;
 
  	//environment setting
@@ -197,6 +195,7 @@ public class PrimaryController implements Initializable {
 	@FXML
     private void export(ActionEvent e) {
 		ObservableList<Map<String, String>> checkdata = tv.getItems();
+		
     	if(checkdata.isEmpty()) {
     		Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Warning");
@@ -225,7 +224,34 @@ public class PrimaryController implements Initializable {
     	savefileName.setInitialFileName(df.format(dNow)+"_manifest.txt");
     	File selectFile  = savefileName.showSaveDialog(null);
     	if(selectFile == null) return;
-    	File txtfile = selectFile;  	
+    	File txtfile = selectFile;
+    	//merge
+    	String output = selectFile.getAbsoluteFile().toString();  	
+	    String datacols = "expected_count,TPM,FPKM";
+	    String rowidcols = "gene_id";
+	    List<File> ifs = new ArrayList<File>();
+	    if(checkdata.isEmpty()) {
+	    	Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			//alert.setHeaderText("Information Alert");
+			String s = "Please select dataset first.";
+			alert.setContentText(s);
+			alert.show();
+	    	System.out.println("No data");
+	    }else {
+	    	for (Map<String,String> sf : checkdata) {
+    		ifs.add(new File(sf.get("Path")));
+    	}
+	    }
+FileProc model = new FileProc();
+		
+		try {
+			model.Merge_RowID(output,rowidcols,datacols,ifs);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    	//
     	BufferedWriter bf;
 		try {
 			bf = new BufferedWriter(new FileWriter(txtfile));
@@ -250,52 +276,6 @@ public class PrimaryController implements Initializable {
 		alert.setContentText(s);
 		alert.show();
 		}
-	@FXML
-	private void merge(ActionEvent e) {
-		ObservableList<Map<String,String>> mselect = tv.getItems();
-		FileChooser savefileName = new FileChooser();
-    	savefileName.setTitle("Save as...");   	
-    	Date dNow = new Date( );
-        SimpleDateFormat df = new SimpleDateFormat ("yyyyMMdd");
-    	savefileName.setInitialFileName(df.format(dNow)+"_merge");
-    	File selectFile  = savefileName.showSaveDialog(null);
-    	if(selectFile == null) return;
-    	String output = selectFile.getAbsoluteFile().toString();  	
-	    String datacols = "expected_count,TPM,FPKM";
-	    String rowidcols = "gene_id";
-	    List<File> ifs = new ArrayList<File>();
-	    if(mselect.isEmpty()) {
-	    	Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Warning");
-			//alert.setHeaderText("Information Alert");
-			String s = "Please select dataset first.";
-			alert.setContentText(s);
-			alert.show();
-	    	System.out.println("No data");
-	    }else {
-	    	for (Map<String,String> sf : mselect) {
-    		ifs.add(new File(sf.get("Path")));
-    	}
-	    }
-FileProc model = new FileProc();
-		
-		try {
-			model.Merge_RowID(output,rowidcols,datacols,ifs);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		Alert alert = new Alert(AlertType.INFORMATION);
-		alert.setTitle("File Saving");
-		//alert.setHeaderText("Information Alert");
-		String s = "The file was saved.";
-		alert.setContentText(s);
-		alert.show();
-	}
-	
-	
-	
-	
 	
 	 /*
 	@FXML

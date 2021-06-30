@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,14 +23,18 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -40,84 +45,185 @@ import javafx.stage.FileChooser;
 public class PrimaryController implements Initializable {
 	@FXML Button LoadFile = new Button();
 	@FXML Button Export = new Button();
-    @FXML TableView<Map<String,String>> tv;
+    @FXML TableView<Map<String,String>> tvSampleList;
 
  	//environment setting
     @Override
     public void initialize(URL location, ResourceBundle resources) {
     	
-		//Set default table
+
+    	//Setup TableView property 
+    	tvSampleList.setEditable(true);
+    	tvSampleList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    	//Prepare items of tableview
+        ObservableList<Map<String,String>> data = FXCollections.observableArrayList();
+    	tvSampleList.getItems().addAll(data);		
+    	
+		//Set default table column for tableview
     	addColumn("SampleID");
     	addColumn("Group");
-    	//addColumn("Path");  //store path
-    	//addColumn("fname");  //store file name with .gene.result
-    	
-    	//tv.setEditable(true);
-    	tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        ObservableList<Map<String,String>> data = FXCollections.observableArrayList();
-    	tv.getItems().addAll(data);		
 
-	    //Setup context menu for tv
+	    //Setup context menu for tvSampleList
 	    ContextMenu contextMenu = new ContextMenu();
-	    MenuItem menuItem1 = new MenuItem("Add to control group");
-	    MenuItem menuItem2 = new MenuItem("Add to experiment group");
-	    MenuItem menuItem3 = new MenuItem("Add to ....");
+	    MenuItem menuItem1 = new MenuItem("Set as Control");
+	    MenuItem menuItem2 = new MenuItem("Set as Test");
+	    MenuItem menuItem3 = new MenuItem("Assign as ....");
+	    MenuItem miAddTC = new MenuItem("Add factor");
+	    MenuItem miDelTC = new MenuItem("Remove factor");
 	    MenuItem menuItem4 = new MenuItem("Delete sample");
-	    contextMenu.getItems().add(menuItem1);
-	    contextMenu.getItems().add(menuItem2);
-	    contextMenu.getItems().add(menuItem3);
-	    contextMenu.getItems().add(menuItem4);
-	    tv.setContextMenu(contextMenu);
+	    ObservableList<MenuItem> milist = contextMenu.getItems();
+	    milist.add(menuItem1);
+	    milist.add(menuItem2);
+	    milist.add(menuItem3);	    
+	    milist.add(new SeparatorMenuItem());
+	    milist.add(miAddTC);
+	    milist.add(miDelTC);
+	    milist.add(new SeparatorMenuItem());
+	    milist.add(menuItem4);
+	    tvSampleList.setContextMenu(contextMenu);
+	    
 	    //Setup item1 for control
 	    menuItem1.setOnAction((event) -> {
-	    	ObservableList<Map<String,String>> mselect = tv.getSelectionModel().getSelectedItems();
+	    	ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();
 	    	for (Map<String,String> sf : mselect) {
-	    		sf.put("Group", "Con");
+	    		sf.put("Group", "Control");
 	    	}
-	    	tv.refresh();
+	    	tvSampleList.refresh();
 	    });
 	    //Setup item2 for test
 	    menuItem2.setOnAction((event) -> {
-	    	ObservableList<Map<String,String>> mselect = tv.getSelectionModel().getSelectedItems();
+	    	ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();
 	    	for (Map<String,String> sf : mselect) {
 	    		sf.put("Group", "Test");
 	    	}
-	    	tv.refresh();
+	    	tvSampleList.refresh();
 	    });
 	    //Setup Item3 for other group
 	    menuItem3.setOnAction((event) -> {
 	    	Dialog<String[]> dialog = new Dialog<>();
-		    dialog.setTitle("Group setting");
-		    dialog.setHeaderText("Please enter group name");
+		    dialog.setTitle("Assign as");
+		    //dialog.setHeaderText("Please enter group name");
 		    DialogPane dialogPane = dialog.getDialogPane();
 		    dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+		    
+		    //search exist factor and to combobox
+		    ObservableList<TableColumn<Map<String, String>, ?>> tcs =  tvSampleList.getColumns();
+	        ObservableList<String> options = FXCollections.observableArrayList();
+	        for(TableColumn<Map<String, String>, ?> tc : tcs) {
+	        	String tname = tc.getText();
+	        	if(tname.equals("SampleID"))continue;
+	        	options.add(tname);
+	        }
+   	        ComboBox<String> comboBox = new ComboBox<>(options); 
+   	        comboBox.setEditable(false);
+	        comboBox.getSelectionModel().selectFirst();	    
+		    		    
 		    TextField textField = new TextField("Group?");
-		    dialogPane.setContent(new VBox(8, textField));
+		    dialogPane.setContent(new VBox(8,new Label("Assign to"),comboBox, new Label("with"), textField));
 	        //Lucas: set method when button is pressed. 
 	        dialog.setResultConverter((ButtonType button) -> {
 	        	//Lucas: when button OK press, create a new string[] with value of txtField and combobox
 	            if (button == ButtonType.OK) {
-	                return new String[] {textField.getText()};
+	                return new String[] { comboBox.getSelectionModel().getSelectedItem() , textField.getText()};
 	            }
 	            return null;
 	        });
 	        //Lucas: result is optional, something like property. the result include String[] return from setResultConverter
 	        Optional<String[]> result = dialog.showAndWait();
-	        ObservableList<Map<String,String>> mselect = tv.getSelectionModel().getSelectedItems();	    	
+	        ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();	    	
 	     	if (result.isPresent()){
 	     		//Lucas: get string[] from result	     		
 	    		String[] r = result.get();
 	    		for (Map<String,String> sf : mselect) {
-		    		sf.put("Group", r[0]);
+		    		sf.put(r[0], r[1]);
 		    	}
 	     	}
-	    	tv.refresh();
+	    	tvSampleList.refresh();
 	    });
+		
+	    //Setup miAddTC for Add column
+	    miAddTC.setOnAction((event) -> {
+	    	TextInputDialog dialog = new TextInputDialog();
+	    	dialog.setHeaderText("Add new factor in table");
+	    	dialog.setTitle("Input Dialog");
+	    	dialog.setContentText("Enter factor label:");
+	    	// Traditional way to get the response value.
+	    	Optional<String> result = dialog.showAndWait();
+	     	if (result.isPresent()){
+	     		//Lucas: get string[] from result    		
+	    		String r = result.get();
+	    		// Set foolproof mechanism : prevent users from setting the same column name 
+	    		for(TableColumn tN : tvSampleList.getColumns()) {
+	    			 if(tN.getText().equals(r)) {
+	    				 Alert alert = new Alert(AlertType.WARNING);
+	    				 alert.setTitle("Warning Dialog");
+	    				 alert.setContentText("factor"+ r + " is exists");
+	    				 alert.showAndWait();
+	    				 return;
+	    			 }
+	    		}
+	    			for(Map<String,String> m :tvSampleList.getItems()) {
+	            		m.put(r, "NA"); 
+	            	}
+		
+	         	addColumn(r);
+	    	}
+	    });	    
+	  //setup removet miDelTC
+	    miDelTC.setOnAction((event) -> {
+	    	Dialog<String> dialog = new Dialog<>();
+		    dialog.setTitle("remvoe factor");
+		    DialogPane dialogPane = dialog.getDialogPane();
+		    dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+		    
+		    //search exist factor and to combobox
+		    ObservableList<TableColumn<Map<String, String>, ?>> tcs =  tvSampleList.getColumns();
+	        ObservableList<String> options = FXCollections.observableArrayList();
+	        for(TableColumn<Map<String, String>, ?> tc : tcs) {
+	        	String tname = tc.getText();
+	        	if(tname.equals("SampleID"))continue;
+	        	options.add(tname);
+	        }
+   	        ComboBox<String> comboBox = new ComboBox<>(options); 
+   	        comboBox.setEditable(false);
+	        comboBox.getSelectionModel().selectFirst();	    
+		    dialogPane.setContent(new VBox(8,new Label("Selected a factor to remove, all values of the factor will removed."),comboBox));
+	        //Lucas: set method when button is pressed. 
+	        dialog.setResultConverter((ButtonType button) -> {
+	        	//Lucas: when button OK press, create a new string[] with value of txtField and combobox
+	            if (button == ButtonType.OK) {
+	                return comboBox.getSelectionModel().getSelectedItem();
+	            }
+	            return null;
+	        });
+	        //Lucas: result is optional, something like property. the result include String[] return from setResultConverter
+	        Optional<String> result = dialog.showAndWait();	        	    	
+	     	if (result.isPresent()){
+	     		String r = result.get();
+	     		//remove factor to all rows
+	     		ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();     		
+	    		for (Map<String,String> sf : mselect) {
+		    		sf.remove(r);
+		    	}
+	    		//remove tableColumn form tableview
+	    		TableColumn Target = null;
+		        for(TableColumn<Map<String, String>, ?> tc : tcs) {
+		        	if (tc.getText().equals(r)) {
+		        		Target = tc;
+		        		break;
+		        	};
+		        }
+		        if(Target != null) tvSampleList.getColumns().remove(Target);
+	     	}
+	    	tvSampleList.refresh();
+	    });
+	    
+	    
 	  //Setup Item4 for delete sample item
 	    menuItem4.setOnAction((event) -> {
-	    	ObservableList<Map<String,String>> mselect = tv.getSelectionModel().getSelectedItems();
-	    	tv.getItems().removeAll(mselect);
-	    	tv.refresh();	    	
+	    	ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();
+	    	tvSampleList.getItems().removeAll(mselect);
+	    	tvSampleList.refresh();	    	
 	    });
 	}
 	private void addColumn(String colname) {    	
@@ -142,7 +248,7 @@ public class PrimaryController implements Initializable {
                  .put(t.getTablePosition().getTableColumn().getText(),t.getNewValue());
        			 });
 		// Add column to table column collection
-		tv.getColumns().add(tableColumn);  
+		tvSampleList.getColumns().add(tableColumn);  
     }	
 	
 	@FXML
@@ -160,7 +266,7 @@ public class PrimaryController implements Initializable {
 	    	filename=folder.listFiles();
 	    }
 	    //load file list
-	    ObservableList<Map<String,String>> data = tv.getItems();
+	    ObservableList<Map<String,String>> data = tvSampleList.getItems();
 
 	    String warning = "Sample ";
 		for (int i = 0; i< filename.length; i++) {
@@ -194,27 +300,44 @@ public class PrimaryController implements Initializable {
 	}
 	@FXML
     private void export(ActionEvent e) {
-		ObservableList<Map<String, String>> checkdata = tv.getItems();
+		ObservableList<Map<String, String>> checkdata = tvSampleList.getItems();
+		ObservableList<TableColumn<Map<String, String>, ?>>tcs = tvSampleList.getColumns();
 		
     	if(checkdata.isEmpty()) {
     		Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Warning");
-			//alert.setHeaderText("Information Alert");
 			String s = "Please load dataset first.";
 			alert.setContentText(s);
 			alert.show();
 			return;
     	}
+    	//Create manifest content and check null value
+    	//Get header list
+    	ArrayList <String> hlst = new ArrayList<String>();
+    	String header = "SampleID";
+    	for(TableColumn tc:tcs) {
+    		if(tc.getText().equals("SampleID")) continue;
+    		hlst.add(tc.getText());
+    		header += "\t"+tc.getText();
+    	}    	
+    	StringBuilder sb = new StringBuilder(header);
+    	//append data and check     	
     	for(Map<String, String> sf : checkdata) {
-    		if(sf.get("Group") == null || sf.get("Group").isEmpty()) {
-    			Alert alert = new Alert(AlertType.INFORMATION);
-    			alert.setTitle("Warning");
-    			//alert.setHeaderText("Information Alert");
-    			String s = "There are some of information "+sf.get("SampleID")+" may empty!";
-    			alert.setContentText(s);
-    			alert.show();   			
-    			return;
+    		String dline = sf.get("SampleID");
+    		for(String factor : hlst) {
+    			String value = sf.get(factor);
+    			if(value == null || value.isEmpty()) {
+        			Alert alert = new Alert(AlertType.INFORMATION);
+        			alert.setTitle("Warning");
+        			//alert.setHeaderText("Information Alert");
+        			String s = "factor "+factor+"of "+sf.get("SampleID")+" is empty!";
+        			alert.setContentText(s);
+        			alert.show();   			
+        			return;
+        		}
+    			dline += "\t"+value;   			
     		}
+    		sb.append("\n"+dline);    		    		
     	}    	
     	//Lucas: set file name for saving.
     	FileChooser savefileName = new FileChooser();
@@ -229,7 +352,10 @@ public class PrimaryController implements Initializable {
     	String output = selectFile.getAbsoluteFile().toString();  	
 	    String datacols = "expected_count,TPM,FPKM";
 	    String rowidcols = "gene_id";
-	    List<File> ifs = new ArrayList<File>();
+	    //List<File> ifs = new ArrayList<File>();
+	    
+	    ArrayList<String> ifst = new ArrayList<String>();
+	    
 	    if(checkdata.isEmpty()) {
 	    	Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Warning");
@@ -240,13 +366,13 @@ public class PrimaryController implements Initializable {
 	    	System.out.println("No data");
 	    }else {
 	    	for (Map<String,String> sf : checkdata) {
-    		ifs.add(new File(sf.get("Path")));
-    	}
+	    		ifst.add(sf.get("SampleID")+"\t"+sf.get("Path"));
+	    		}
 	    }
-FileProc model = new FileProc();
+	    FileProc model = new FileProc();
 		
 		try {
-			model.Merge_RowID(output,rowidcols,datacols,ifs);
+			model.Merge_RowID(output,rowidcols,datacols,ifst);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -255,15 +381,7 @@ FileProc model = new FileProc();
     	BufferedWriter bf;
 		try {
 			bf = new BufferedWriter(new FileWriter(txtfile));
-	    	ObservableList<Map<String, String>> tvdata = tv.getItems();
-	    	bf.append(tvdata.get(0).get("fname")+"\t"+tvdata.get(0).get("Group"));
-	    	for(int i =1; i < tvdata.size();i++) {
-	    		bf.append("\n"+tvdata.get(i).get("fname")+"\t"+tvdata.get(i).get("Group")); 	
-	    	}
-	    	/*This will add "\n" in end of file
-	    	 * for (Map<String, String> sf : tvdata) {	
-	    		bf.append(sf.get("SampleID")+"\t"+sf.get("Group")+"\n");  		
-	    	}*/
+			bf.append(sb.toString());
 	    	bf.flush();
 	    	bf.close();
 		} catch (IOException e1) {
@@ -277,58 +395,6 @@ FileProc model = new FileProc();
 		alert.show();
 		}
 	
-	 /*
-	@FXML
-    private void btnAddCol() { 	
-   	//Lucas:create a dialog object => https://stackoverflow.com/questions/44147595/get-more-than-two-inputs-in-a-javafx-dialog
-    	Dialog<String[]> dialog = new Dialog<>();
-        dialog.setTitle("Dialog Test");
-        dialog.setHeaderText("Please specify…");
-        //Lucas: get pane from dialog
-        DialogPane dialogPane = dialog.getDialogPane();
-        //Lucas: setup button
-        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        //Lucas: Create control for dialog
-        TextField textField = new TextField("Input Factor Name");
-        //Lucas: prepare ob-list for combobox
-        ObservableList<String> options = FXCollections.observableArrayList();
-        options.add("Category");
-        options.add("Numeric");        
-        //Lucas: Create combobox
-        ComboBox<String> comboBox = new ComboBox<>(options);        
-        comboBox.getSelectionModel().selectFirst();
-        //Lucas: setup pane in dialog, add new container Vbox, with two controls
-        dialogPane.setContent(new VBox(8, textField, comboBox));        
-        //Lucas: set method when button is pressed. 
-        dialog.setResultConverter((ButtonType button) -> {
-        	//Lucas: when button OK press, create a new string[] with value of txtField and combobox
-            if (button == ButtonType.OK) {
-                return new String[] {textField.getText(),comboBox.getValue()};
-            }
-            return null;
-        });
-        
-        //Lucas: result is optional, something like property. the result include String[] return from setResultConverter
-        Optional<String[]> result = dialog.showAndWait();
-     	if (result.isPresent()){
-     		//Lucas: get string[] from result
-     		
-    		String[] r = result.get();
-    		// Set foolproof mechanism : prevent users from setting the same column name 
-    		for(TableColumn tN : tableMetadata.getColumns()) {
-    			 if(tN.getText().equals(r[0])) {
-    				 Alert alert = new Alert(AlertType.WARNING);
-    				 alert.setTitle("Warning Dialog");
-    				 alert.setContentText("Column name is exists");
-    				 alert.showAndWait();
-    				 return;
-    			 }
-    		}
-    			for(Map<String,String> m :data) {
-            		m.put(r[0]); 
-            	}
-	
-         	addColumn(r[0]);
-    	}*/
+
 	}
 

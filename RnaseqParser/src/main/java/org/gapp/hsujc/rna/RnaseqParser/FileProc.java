@@ -15,7 +15,7 @@ import java.util.List;
 
 public class FileProc {
 	
-	public void Merge_RowID(String _output, String _rowidcols, String _datacols, List<File> _src) throws Exception {
+	public void Merge_RowID(String _output, String _rowidcols, String _datacols, ArrayList<String> _src) throws Exception {
 		//get row id cols
 		String[] rids = _rowidcols.split(",");
 		//get row id cols
@@ -29,9 +29,10 @@ public class FileProc {
 		//join.put("DataColumn##", dids);
 		//sample number
 		for(int fi =0;fi <_src.size();fi++) {
-			File f = _src.get(fi);
-			filelist += "\t"+f.getName();
-			System.out.println("Append "+ f.getName());
+			String[] finfo= _src.get(fi).split("\t");
+			File f = new File(finfo[1]);
+			filelist += "\t"+finfo[0];
+			System.out.println("Append "+finfo[1]);
 			BufferedReader br = new BufferedReader(new FileReader(f));
 			//get column of row id and data
 			String line=br.readLine();

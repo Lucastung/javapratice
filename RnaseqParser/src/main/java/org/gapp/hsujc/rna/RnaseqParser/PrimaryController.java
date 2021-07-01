@@ -5,11 +5,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,30 +40,36 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 public class PrimaryController implements Initializable {
 	@FXML Button LoadFile = new Button();
 	@FXML Button Export = new Button();
+	@FXML Button exportproj = new Button();
     @FXML TableView<Map<String,String>> tvSampleList;
 
  	//environment setting
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-    	
-
     	//Setup TableView property 
     	tvSampleList.setEditable(true);
     	tvSampleList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     	//Prepare items of tableview
         ObservableList<Map<String,String>> data = FXCollections.observableArrayList();
-    	tvSampleList.getItems().addAll(data);		
-    	
+    	tvSampleList.getItems().addAll(data);		   	
 		//Set default table column for tableview
     	addColumn("SampleID");
+    	//addColumn("SamplePath");
     	addColumn("Group");
-
+    	/*
+    	for (Object col : tvSampleList.getColumns()) {
+    	       TableColumn colCasted = ((TableColumn)col);
+    	   if(colCasted.getText().equals("SamplePath")){
+    	      colCasted.setVisible(false);
+    	   }
+    	 }
+    	 */
+    	//tvSampleList.getColumns("SamplePath").
 	    //Setup context menu for tvSampleList
 	    ContextMenu contextMenu = new ContextMenu();
 	    MenuItem menuItem1 = new MenuItem("Set as Control");
@@ -80,8 +87,7 @@ public class PrimaryController implements Initializable {
 	    milist.add(miDelTC);
 	    milist.add(new SeparatorMenuItem());
 	    milist.add(menuItem4);
-	    tvSampleList.setContextMenu(contextMenu);
-	    
+	    tvSampleList.setContextMenu(contextMenu);	    
 	    //Setup item1 for control
 	    menuItem1.setOnAction((event) -> {
 	    	ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();
@@ -140,7 +146,6 @@ public class PrimaryController implements Initializable {
 	     	}
 	    	tvSampleList.refresh();
 	    });
-		
 	    //Setup miAddTC for Add column
 	    miAddTC.setOnAction((event) -> {
 	    	TextInputDialog dialog = new TextInputDialog();
@@ -165,7 +170,6 @@ public class PrimaryController implements Initializable {
 	    			for(Map<String,String> m :tvSampleList.getItems()) {
 	            		m.put(r, "NA"); 
 	            	}
-		
 	         	addColumn(r);
 	    	}
 	    });	    
@@ -217,8 +221,6 @@ public class PrimaryController implements Initializable {
 	     	}
 	    	tvSampleList.refresh();
 	    });
-	    
-	    
 	  //Setup Item4 for delete sample item
 	    menuItem4.setOnAction((event) -> {
 	    	ObservableList<Map<String,String>> mselect = tvSampleList.getSelectionModel().getSelectedItems();
@@ -250,27 +252,25 @@ public class PrimaryController implements Initializable {
 		// Add column to table column collection
 		tvSampleList.getColumns().add(tableColumn);  
     }	
-	
 	@FXML
-    private void loadfile(ActionEvent e) {
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-	    directoryChooser.setInitialDirectory(new File("."));
-	    directoryChooser.setTitle ("Choose RNAseq Result Folder");
-	    File folder = directoryChooser.showDialog(null);
-	    File[] filename;  
-	    //load filename	    
-	    if (folder == null || !folder.isDirectory()) {
-	    	System.out.println("no folder selected!!");
+    private void inputfile(ActionEvent e) {
+		List<File> fileList = null;
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Choose RNAseq Result");
+		fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("genes.results", "*.genes.results"),
+                new FileChooser.ExtensionFilter("All files", "*.*")
+            );		
+		/* Show open file dialog to select multiple files. */
+		fileList = fileChooser.showOpenMultipleDialog(null);
+		if (fileList == null) {
+			System.out.println("no folder selected!!");
 	    	return;
-	    }else {
-	    	filename=folder.listFiles();
-	    }
-	    //load file list
-	    ObservableList<Map<String,String>> data = tvSampleList.getItems();
-
+		}
+		ObservableList<Map<String,String>> data = tvSampleList.getItems();
 	    String warning = "Sample ";
-		for (int i = 0; i< filename.length; i++) {
-			String fname = filename[i].getName();
+		for (int i = 0; i< fileList.size(); i++) {
+			String fname = fileList.get(i).getName();
 			String sname = fname.replace(".genes.results", ""); //fname.split(".genes.results")[0];
 			
 			boolean haveSample = false;
@@ -285,7 +285,211 @@ public class PrimaryController implements Initializable {
 			
 			HashMap<String, String> d2 = new HashMap<String, String>();
 			d2.put("SampleID", sname);
-			d2.put("Path", filename[i].getAbsolutePath());
+			d2.put("SamplePath", fileList.get(i).getAbsolutePath());
+			d2.put("fname", fname);
+			data.add(d2);
+		}
+		if(warning != "Sample ") {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			alert.setHeaderText("File(s) already exist");
+			String s = warning+" already exist!";
+			alert.setContentText(s);
+			alert.show();  
+		}
+	}
+		
+	@FXML
+    private void loadproj(ActionEvent e) {
+		ObservableList<Map<String,String>> projdata = FXCollections.observableArrayList();
+		ObservableList<Map<String,String>> data = tvSampleList.getItems();
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Choose project");
+		fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("proj", "*.proj"),
+                new FileChooser.ExtensionFilter("All files", "*.*")
+            );		
+		/* Show open file dialog to select multiple files. */
+		File file = null;	
+		/* Show open file dialog to select multiple files. */
+		file = fileChooser.showOpenDialog(null);
+		if (file == null) {
+			System.out.println("no project selected!!");
+	    	return;
+		}
+		String[] sData;
+		String warning = "Sample ";
+		String warningfpath = "Sample ";
+		try {
+			sData = (new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())))).split("\n");
+			//get header for map key
+			String header = sData[0];
+			if(!header.split("\t")[0].equals("SampleID") && !header.split("\t")[1].equals("SamplePath")) {
+				System.out.println("File format error!!");
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Warning");
+				//alert.setHeaderText("File(s) already exist");
+				String s = "File format error!";
+				alert.setContentText(s);
+				alert.show();  
+				return;
+			}
+			for(String s : header.split("\t")) {
+				if(s.equals("SampleID")) continue;
+				if(s.equals("SamplePath")) continue;
+				if(s.equals("Group")) continue;
+				addColumn(s);
+			}
+			for(int i = 1; i < sData.length;i++) {
+				String line = sData[i];
+				boolean haveSample = false;
+				for( Map<String,String> hm : data ) {
+					if(hm.containsKey("SampleID") && hm.get("SampleID").equals(line.split("\t")[0])) {
+						warning += line.split("\t")[0] + ",";
+						haveSample = true;
+						continue;
+					}
+				}
+				if(haveSample) continue;
+				boolean filexist = false;
+				File tempFile = new File(line.split("\t")[1]);
+				if(!tempFile.exists()) {
+					filexist = true;
+					warningfpath += line.split("\t")[0] + ",";
+					continue;
+				}
+				if(filexist) continue;
+				HashMap<String, String> d2 = new HashMap<String, String>();
+				for(int j = 0 ; j < line.split("\t").length; j++) {
+					d2.put(header.split("\t")[j],line.split("\t")[j]);
+				}
+				projdata.add(d2);
+			}	
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if(warning != "Sample ") {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			alert.setHeaderText("File(s) already exist");
+			String s = warning+" already exist!";
+			alert.setContentText(s);
+			alert.show();  
+		}
+		if(warningfpath != "Sample ") {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			alert.setHeaderText("File(s) didn't exist");
+			String s = warningfpath+" file can't find!";
+			alert.setContentText(s);
+			alert.show();  
+		}
+		tvSampleList.getItems().addAll(projdata);				
+	}
+	
+	@FXML
+    private void exportproj(ActionEvent e) {
+		ObservableList<Map<String, String>> expodata = tvSampleList.getItems();
+		ObservableList<TableColumn<Map<String, String>, ?>>tcs = tvSampleList.getColumns();		
+    	if(expodata.isEmpty()) {
+    		Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			String s = "Please load dataset first.";
+			alert.setContentText(s);
+			alert.show();
+			return;
+    	}
+     	//Create manifest content and check null value
+    	//Get header list
+    	ArrayList <String> hlst = new ArrayList<String>();
+    	hlst.add("SamplePath");
+    	String header = "SampleID"+"\t"+"SamplePath";
+    	for(TableColumn tc:tcs) {
+    		if(tc.getText().equals("SampleID")) continue;
+    		hlst.add(tc.getText());
+    		header += "\t"+tc.getText();
+    	}    	
+    	StringBuilder sb = new StringBuilder(header);
+    	//append data and check     	
+    	for(Map<String, String> sf : expodata) {
+    		String dline = sf.get("SampleID");
+    		//add header
+    		for(String factor : hlst) {
+    			String value = sf.get(factor);
+    			if(value == null || value.isEmpty()) {
+        			Alert alert = new Alert(AlertType.INFORMATION);
+        			alert.setTitle("Warning");
+        			//alert.setHeaderText("Information Alert");
+        			String s = "factor "+factor+"of "+sf.get("SampleID")+" is empty!";
+        			alert.setContentText(s);
+        			alert.show();   			
+        			return;
+        		}
+    			dline += "\t"+value;   			
+    		}
+    		//append data
+    		sb.append("\n"+dline);    		    		
+    	}    	
+    	//Lucas: set file name for saving.
+    	FileChooser savefileName = new FileChooser();
+    	savefileName.setTitle("Save as...");   	
+    	Date dNow = new Date( );
+        SimpleDateFormat df = new SimpleDateFormat ("yyyyMMdd");
+    	savefileName.setInitialFileName(df.format(dNow)+"_project.proj");
+    	File selectFile  = savefileName.showSaveDialog(null);
+    	if(selectFile == null) return;
+    	File txtfile = selectFile;	
+    	//
+    	BufferedWriter bf;
+		try {
+			bf = new BufferedWriter(new FileWriter(txtfile));
+			bf.append(sb.toString());
+	    	bf.flush();
+	    	bf.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			}
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Project Saving");
+		//alert.setHeaderText("Information Alert");
+		String s = "The project was saved.";
+		alert.setContentText(s);
+		alert.show();	
+	}
+	@FXML
+    private void loadfile(ActionEvent e) {
+		List<File> fileList = null;
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Choose RNAseq Result");
+		fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("genes.results", "*.genes.results"),
+                new FileChooser.ExtensionFilter("All files", "*.*")
+            );		
+		/* Show open file dialog to select multiple files. */
+		fileList = fileChooser.showOpenMultipleDialog(null);
+		if (fileList == null) {
+			System.out.println("no folder selected!!");
+	    	return;
+		}
+		ObservableList<Map<String,String>> data = tvSampleList.getItems();
+	    String warning = "Sample ";
+		for (int i = 0; i< fileList.size(); i++) {
+			String fname = fileList.get(i).getName();
+			String sname = fname.replace(".genes.results", ""); //fname.split(".genes.results")[0];
+			
+			boolean haveSample = false;
+			for( Map<String,String> hm : data ) {
+				if(hm.containsKey("SampleID") && hm.get("SampleID").equals(sname)) {
+					warning += sname + ",";
+					haveSample = true;
+					continue;
+				}
+			}
+			if(haveSample) continue;
+			HashMap<String, String> d2 = new HashMap<String, String>();
+			d2.put("SampleID", sname);
+			d2.put("SamplePath", fileList.get(i).getAbsolutePath());
 			d2.put("fname", fname);
 			data.add(d2);
 		}
@@ -301,8 +505,7 @@ public class PrimaryController implements Initializable {
 	@FXML
     private void export(ActionEvent e) {
 		ObservableList<Map<String, String>> checkdata = tvSampleList.getItems();
-		ObservableList<TableColumn<Map<String, String>, ?>>tcs = tvSampleList.getColumns();
-		
+		ObservableList<TableColumn<Map<String, String>, ?>>tcs = tvSampleList.getColumns();		
     	if(checkdata.isEmpty()) {
     		Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Warning");
@@ -353,9 +556,7 @@ public class PrimaryController implements Initializable {
 	    String datacols = "expected_count,TPM,FPKM";
 	    String rowidcols = "gene_id";
 	    //List<File> ifs = new ArrayList<File>();
-	    
 	    ArrayList<String> ifst = new ArrayList<String>();
-	    
 	    if(checkdata.isEmpty()) {
 	    	Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Warning");
@@ -366,7 +567,7 @@ public class PrimaryController implements Initializable {
 	    	System.out.println("No data");
 	    }else {
 	    	for (Map<String,String> sf : checkdata) {
-	    		ifst.add(sf.get("SampleID")+"\t"+sf.get("Path"));
+	    		ifst.add(sf.get("SampleID")+"\t"+sf.get("SamplePath"));
 	    		}
 	    }
 	    FileProc model = new FileProc();
@@ -394,7 +595,5 @@ public class PrimaryController implements Initializable {
 		alert.setContentText(s);
 		alert.show();
 		}
-	
-
 	}
 

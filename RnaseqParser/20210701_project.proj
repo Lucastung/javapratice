@@ -1,0 +1,6 @@
+SampleID	SamplePath	Group	sex	Age	disease
+U4-CCD30-1	/home/hsujc/git/javapratice/RnaseqParser/RNAseqData/U4-CCD30-1.genes.results	Control	M	10	Y
+U2-CCD30-2	/home/hsujc/git/javapratice/RnaseqParser/RNAseqData/U2-CCD30-2.genes.results	Control	F	20	Y
+U1-cTAL30-1	/home/hsujc/git/javapratice/RnaseqParser/RNAseqData/U1-cTAL30-1.genes.results	Control	M	25	Y
+C2-cTAL30-1	/home/hsujc/git/javapratice/RnaseqParser/RNAseqData/C2-cTAL30-1.genes.results	Test	F	9	N
+C1-CCD30-1	/home/hsujc/git/javapratice/RnaseqParser/RNAseqData/C1-CCD30-1.genes.results	Test	M	40	N

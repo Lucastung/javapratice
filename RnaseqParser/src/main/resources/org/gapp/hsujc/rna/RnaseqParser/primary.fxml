@@ -14,7 +14,9 @@
       <HBox prefHeight="14.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
             <Button fx:id="LoadFile" mnemonicParsing="false" onAction="#loadfile" text="LoadFile" />
-            <Button fx:id="Export" mnemonicParsing="false" onAction="#export" text="Export" />
+            <Button mnemonicParsing="false" onAction="#loadproj" text="Import Project" />
+            <Button fx:id="exportproj" mnemonicParsing="false" onAction="#exportproj" text="Save Project" />
+            <Button fx:id="Export" mnemonicParsing="false" onAction="#export" text="Run" />
          </children>
       </HBox>
    </top>

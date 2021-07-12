@@ -90,14 +90,15 @@ public class PrimaryController implements Initializable {
     private void loadFile() throws IOException {
     	ObservableList<sampleFile> data = tableManifest.getItems();
     	String warning = " ";
+    	String name;
+		String path;
+		String direction;
     	File f = new File("raw/");
     	if(!f.isDirectory()) {
     		System.exit(-1);
     	}else {
     		File[] filelist=f.listFiles();
-    		String name;
-    		String path;
-    		String direction;
+    		
     		for(int i = 0; i<filelist.length;i++) {
     			name = filelist[i].getName().split("_")[0];
 				path = filelist[i].getAbsolutePath();
@@ -120,7 +121,7 @@ public class PrimaryController implements Initializable {
 				
 				data.add(newRow);
     		}
-    		
+						
     		//Create Hashset to put #SampleID in metadata table
 	    	HashSet<String> hs = new HashSet<>();
 	    	for (sampleFile sn :tableManifest.getItems()) {
@@ -128,9 +129,18 @@ public class PrimaryController implements Initializable {
 	    	}
 
 	    	for (String id : hs) {
-	    		HashMap<String, String> d3 = new HashMap<String, String>();    	
-	        	d3.put("#SampleID", id.trim());  
-	        	data2.add(d3);
+	    		HashMap<String, String> d3 = new HashMap<String, String>(); 
+	    		// for loop to check Metadata file raw's numbers
+	    		for (Map<String,String> m : tableMetadata.getItems()) {
+	    			if (m.containsKey(id.trim())) {
+	    				continue;
+	    			}else {
+	    				d3.put("#SampleID", id.trim());  
+	    				data2.add(d3);
+	    			}
+	    		}
+//	        	d3.put("#SampleID", id.trim());  
+//	        	data2.add(d3);
 	        	tableMetadata.getItems().add(d3);
 	        	tableMetadata.sort();
 	        	

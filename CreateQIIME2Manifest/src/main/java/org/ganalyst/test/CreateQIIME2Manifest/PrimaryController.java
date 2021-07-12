@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -93,67 +94,87 @@ public class PrimaryController implements Initializable {
     	String name;
 		String path;
 		String direction;
-    	File f = new File("raw/");
-    	if(!f.isDirectory()) {
-    		System.exit(-1);
-    	}else {
-    		File[] filelist=f.listFiles();
-    		
-    		for(int i = 0; i<filelist.length;i++) {
-    			name = filelist[i].getName().split("_")[0];
-				path = filelist[i].getAbsolutePath();
-				if (filelist[i].getName().split("_")[1].endsWith("R1.fastq.gz")) {
-					direction = "forword";
-				}else {
-					direction = "reverse";
+		
+    	FileChooser fc = new FileChooser();
+    	fc.setInitialDirectory( new File("raw/"));
+    	List<File> filelist = fc.showOpenMultipleDialog(null);
+    	if(filelist==null || filelist.size()==0) {
+    		//Lucas: Never use System.exit(-1) in GUI program, exit gracefully.
+    		//Lucas: Show alert and return
+    		return;
+    	}
+    	
+    	//File[] filelist=f.listFiles();
+    	//Doing manifest file
+		for(File f : filelist) {
+			name = f.getName().split("_")[0];
+			path = f.getAbsolutePath();
+			if (f.getName().split("_")[1].endsWith("R1.fastq.gz")) {
+				direction = "forword";
+			}else {
+				direction = "reverse";
+			}
+			sampleFile newRow = new sampleFile(name,path,direction);
+			//以for loop check file name/path have repeat
+			boolean haveSamplepath = false;
+			for (sampleFile sf : data) {
+				if (sf.getCol2().equals(path)) {
+					warning += path + ",";
+					haveSamplepath = true;
+					continue;
 				}
-				sampleFile newRow = new sampleFile(name,path,direction);
-				//以for loop check file name/path have repeat
-				boolean haveSamplepath = false;
-				for (sampleFile sf : data) {
-					if (sf.getCol2().equals(path)) {
-						warning += path + ",";
-						haveSamplepath = true;
-						continue;
-					}
-				}
-				if(haveSamplepath) continue;
-				
-				data.add(newRow);
-    		}
-						
-    		//Create Hashset to put #SampleID in metadata table
-	    	HashSet<String> hs = new HashSet<>();
-	    	for (sampleFile sn :tableManifest.getItems()) {
-	    		hs.add(sn.getCol1());
-	    	}
+			}
+			if(haveSamplepath) continue;				
+			data.add(newRow);
+		}
+					
+		//Create Hashset to put #SampleID in metadata table
+    	HashSet<String> hs = new HashSet<>();
+    	for (sampleFile sn :tableManifest.getItems()) {
+    		hs.add(sn.getCol1());
+    	}
+    	
+    	//Lucas: get current column name of metadata table
+    	ObservableList<TableColumn<Map<String, String>, ?>> tcs = tableMetadata.getColumns();
+    	List<String> htc = new ArrayList<String>(); 
+    	for (TableColumn tc :tcs) {
+    		htc.add(tc.getText());
+    	}
 
-	    	for (String id : hs) {
-	    		HashMap<String, String> d3 = new HashMap<String, String>(); 
-	    		// for loop to check Metadata file raw's numbers
-	    		for (Map<String,String> m : tableMetadata.getItems()) {
-	    			if (m.containsKey(id.trim())) {
-	    				continue;
-	    			}else {
-	    				d3.put("#SampleID", id.trim());  
-	    				data2.add(d3);
-	    			}
-	    		}
-//	        	d3.put("#SampleID", id.trim());  
-//	        	data2.add(d3);
-	        	tableMetadata.getItems().add(d3);
-	        	tableMetadata.sort();
-	        	
+    	//Lucas: Add sample with sample name hashset
+    	for (String id : hs) {	    		
+	    	//Lucas: Check redundant
+	    	boolean haveSample = false;
+	    	for (Map<String,String> m : tableMetadata.getItems()) {
+    			if(m.get("#SampleID").equals(id)) {
+    				haveSample =true;
+    				break;
+    			}
 	    	}
 	    	
-	    	if(warning != " ") {
-    			Alert alert = new Alert(AlertType.INFORMATION);
-    			alert.setTitle("Warning");
-    			alert.setHeaderText("Duplicated !!");
-    			String s = "The sample under this path already exists";
-    			alert.setContentText(s);
-    			alert.show();   			
-	    	}
+    		if(haveSample) {
+    			//Lucas: pass exist sample
+    			continue;
+    		} else {    			
+    			//Lucas: create new sample item
+    			HashMap<String, String> d3 = new HashMap<String, String>();
+    			//Lucas: add exist table column value
+    			for(String cname :htc) {
+    				d3.put(cname, "NA");
+    			}
+    			//Lucas: replace sampleID column with id
+				d3.put("#SampleID", id.trim());
+				tableMetadata.getItems().add(d3);
+    		}
+    	}
+        tableMetadata.sort();
+        if(warning != " ") {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			alert.setHeaderText("Duplicated !!");
+			String s = "The sample under this path already exists";
+			alert.setContentText(s);
+			alert.show();   			
     	}
     }
     
@@ -291,7 +312,7 @@ public class PrimaryController implements Initializable {
     				 return;
     			 }
     		}
-    			for(Map<String,String> m :data2) {
+    			for(Map<String,String> m :tableMetadata.getItems()) {
             		m.put(r[0], "NA"); 
             	}
 	

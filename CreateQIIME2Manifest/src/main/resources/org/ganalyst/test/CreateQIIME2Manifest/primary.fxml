@@ -27,9 +27,9 @@
       </HBox>
       <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" GridPane.rowIndex="1">
         <tabs>
-          <Tab text="Menfiest">
+          <Tab text="Manfiest">
                <content>
-                  <TableView fx:id="tv" prefHeight="235.0" prefWidth="305.0" />
+                  <TableView fx:id="tableManifest" prefHeight="235.0" prefWidth="305.0" />
                </content>
           </Tab>
           <Tab text="MetaData">

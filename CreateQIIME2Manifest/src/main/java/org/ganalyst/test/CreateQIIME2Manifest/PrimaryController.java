@@ -6,13 +6,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -22,6 +25,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
@@ -41,7 +45,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-public class PrimaryController {
+public class PrimaryController implements Initializable {
 	public class sampleFile{		
 		private SimpleStringProperty col1;
 		private SimpleStringProperty col2;
@@ -75,7 +79,7 @@ public class PrimaryController {
 
 	
 	@FXML
-	TableView<sampleFile> tv;
+	TableView<sampleFile> tableManifest;
 	
 	@FXML
 	TableView<Map<String,String>> tableMetadata;
@@ -84,7 +88,8 @@ public class PrimaryController {
 
     @FXML
     private void loadFile() throws IOException {
-    	
+    	ObservableList<sampleFile> data = tableManifest.getItems();
+    	String warning = " ";
     	File f = new File("raw/");
     	if(!f.isDirectory()) {
     		System.exit(-1);
@@ -103,78 +108,43 @@ public class PrimaryController {
 				}
 				sampleFile newRow = new sampleFile(name,path,direction);
 				//以for loop check file name/path have repeat
-/*				for (int n=0; n<name.length(); n++) {
-					if (name.equals(newRow.getCol1())) {
-						data.add(newRow);
-					}else {
-						Alert alert = new Alert(AlertType.WARNING);
-	    				alert.setTitle("Warning Dialog");
-	    				alert.setContentText("The sample name is exists!");
-	    				alert.showAndWait();
-	    				return; 
+				boolean haveSamplepath = false;
+				for (sampleFile sf : data) {
+					if (sf.getCol2().equals(path)) {
+						warning += path + ",";
+						haveSamplepath = true;
+						continue;
 					}
-					
 				}
-*/				
+				if(haveSamplepath) continue;
+				
 				data.add(newRow);
     		}
-    	}
-    	
-    	tv.setEditable(true);
-    	
-    	TableColumn<sampleFile,String> firstNameCol = new TableColumn<sampleFile,String>("sample-id");
-    	firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
-    	firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-    	firstNameCol.setOnEditCommit(
-        		new EventHandler<CellEditEvent<sampleFile, String>>() {
-        			@Override
-        			public void handle(CellEditEvent<sampleFile, String> t) {
-        				((sampleFile) t.getTableView().getItems().get(
-        						t.getTablePosition().getRow())
-        				        ).setCol1(t.getNewValue());
-        			}
-        			
-        		}
-        		);
-    	TableColumn<sampleFile,String> secondNameCol = new TableColumn<sampleFile,String>("absolute-filepath");
-    	secondNameCol.setCellValueFactory(new PropertyValueFactory("col2"));
-    	secondNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-    	secondNameCol.setOnEditCommit(
-        		new EventHandler<CellEditEvent<sampleFile, String>>() {
-        			@Override
-        			public void handle(CellEditEvent<sampleFile, String> t) {
-        				((sampleFile) t.getTableView().getItems().get(
-        						t.getTablePosition().getRow())
-        				        ).setCol2(t.getNewValue());
-        			}        			
-        		}
-        		);
-    	TableColumn<sampleFile,String> thirdNameCol = new TableColumn<sampleFile,String>("direction");
-    	thirdNameCol.setCellValueFactory(new PropertyValueFactory("col3"));
-    	thirdNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-    	thirdNameCol.setOnEditCommit(
-        		new EventHandler<CellEditEvent<sampleFile, String>>() {
-        			@Override
-        			public void handle(CellEditEvent<sampleFile, String> t) {
-        				((sampleFile) t.getTableView().getItems().get(
-        						t.getTablePosition().getRow())
-        				        ).setCol3(t.getNewValue());
-        			}        			
-        		}
-        		);
+    		
+    		//Create Hashset to put #SampleID in metadata table
+	    	HashSet<String> hs = new HashSet<>();
+	    	for (sampleFile sn :tableManifest.getItems()) {
+	    		hs.add(sn.getCol1());
+	    	}
 
-		tv.getItems().addAll(data);	
-    	tv.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
-    	
-    	// get data2 column1's value from "data" Col1
-    	for (sampleFile d1 : data) {
-    		HashMap<String, String> d2 = new HashMap<String, String>();    	
-        	d2.put("#SampleID", d1.getCol1());
-        	data2.add(d2);
+	    	for (String id : hs) {
+	    		HashMap<String, String> d3 = new HashMap<String, String>();    	
+	        	d3.put("#SampleID", id.trim());  
+	        	data2.add(d3);
+	        	tableMetadata.getItems().add(d3);
+	        	tableMetadata.sort();
+	        	
+	    	}
+	    	
+	    	if(warning != " ") {
+    			Alert alert = new Alert(AlertType.INFORMATION);
+    			alert.setTitle("Warning");
+    			alert.setHeaderText("Duplicated !!");
+    			String s = "The sample under this path already exists";
+    			alert.setContentText(s);
+    			alert.show();   			
+	    	}
     	}
-    	//Lucas: change addColumn method with type setting
-    	addColumn("#SampleID","#q2:types");
-    	tableMetadata.getItems().addAll(data2);
     }
     
     @FXML
@@ -195,9 +165,9 @@ public class PrimaryController {
 			bf = new BufferedWriter(new FileWriter(txtfile));
 			bf.append("sample-id"+","+"absolute-filepath"+","+"direction");
 
-	    	ObservableList<sampleFile> tvdata = tv.getItems();
+	    	ObservableList<sampleFile> Manifestdata = tableManifest.getItems();
 	    	
-	    	for (sampleFile sf : tvdata) {	
+	    	for (sampleFile sf : Manifestdata) {	
 	    		bf.append("\n"+sf.getCol1()+","+sf.getCol2()+","+sf.getCol3());
 	    		
 	    	}
@@ -371,8 +341,66 @@ public class PrimaryController {
 	    
 	    
     }
-    
-    
-    
-    
+
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		tableManifest.setEditable(true);
+    	
+    	TableColumn<sampleFile,String> firstNameCol = new TableColumn<sampleFile,String>("sample-id");
+    	firstNameCol.setCellValueFactory(new PropertyValueFactory("col1"));
+    	firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    	firstNameCol.setOnEditCommit(
+        		new EventHandler<CellEditEvent<sampleFile, String>>() {
+        			@Override
+        			public void handle(CellEditEvent<sampleFile, String> t) {
+        				((sampleFile) t.getTableView().getItems().get(
+        						t.getTablePosition().getRow())
+        				        ).setCol1(t.getNewValue());
+        			}
+        			
+        		}
+        		);
+    	TableColumn<sampleFile,String> secondNameCol = new TableColumn<sampleFile,String>("absolute-filepath");
+    	secondNameCol.setCellValueFactory(new PropertyValueFactory("col2"));
+    	secondNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    	secondNameCol.setOnEditCommit(
+        		new EventHandler<CellEditEvent<sampleFile, String>>() {
+        			@Override
+        			public void handle(CellEditEvent<sampleFile, String> t) {
+        				((sampleFile) t.getTableView().getItems().get(
+        						t.getTablePosition().getRow())
+        				        ).setCol2(t.getNewValue());
+        			}        			
+        		}
+        		);
+    	TableColumn<sampleFile,String> thirdNameCol = new TableColumn<sampleFile,String>("direction");
+    	thirdNameCol.setCellValueFactory(new PropertyValueFactory("col3"));
+    	thirdNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    	thirdNameCol.setOnEditCommit(
+        		new EventHandler<CellEditEvent<sampleFile, String>>() {
+        			@Override
+        			public void handle(CellEditEvent<sampleFile, String> t) {
+        				((sampleFile) t.getTableView().getItems().get(
+        						t.getTablePosition().getRow())
+        				        ).setCol3(t.getNewValue());
+        			}        			
+        		}
+        		);
+
+    	tableManifest.getItems().addAll(data);	
+    	tableManifest.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
+    	
+    	// get data2 column1's value from "data" Col1
+    	for (sampleFile d1 : data) {
+    		HashMap<String, String> d2 = new HashMap<String, String>();    	
+        	d2.put("#SampleID", d1.getCol1());
+        	data2.add(d2);
+    	}
+    	//Lucas: change addColumn method with type setting
+    	addColumn("#SampleID","#q2:types");
+    	tableMetadata.getItems().addAll(data2);
+		
+		
+	}
+   
 }

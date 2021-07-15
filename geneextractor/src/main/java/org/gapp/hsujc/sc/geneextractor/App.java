@@ -17,9 +17,14 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+    	DataModel dm = new DataModel();
+    	dm.RunThread();
+    	dm.RunThread();
+
         scene = new Scene(loadFXML("primary"), 640, 480);
         stage.setScene(scene);
         stage.show();
+        
     }
 
     static void setRoot(String fxml) throws IOException {

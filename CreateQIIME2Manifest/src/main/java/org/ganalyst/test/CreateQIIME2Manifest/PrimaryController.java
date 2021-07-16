@@ -3,7 +3,6 @@ package org.ganalyst.test.CreateQIIME2Manifest;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -18,8 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -96,7 +93,7 @@ public class PrimaryController implements Initializable {
 		String direction;
 		
     	FileChooser fc = new FileChooser();
-    	fc.setInitialDirectory( new File("raw/"));
+    	fc.setInitialDirectory( new File("."));
     	List<File> filelist = fc.showOpenMultipleDialog(null);
     	if(filelist==null || filelist.size()==0) {
     		//Lucas: Never use System.exit(-1) in GUI program, exit gracefully.
@@ -165,6 +162,7 @@ public class PrimaryController implements Initializable {
     			//Lucas: replace sampleID column with id
 				d3.put("#SampleID", id.trim());
 				tableMetadata.getItems().add(d3);
+				tableMetadata.getSortOrder().addAll(tcs.get(0));
     		}
     	}
         tableMetadata.sort();
@@ -373,6 +371,7 @@ public class PrimaryController implements Initializable {
 	    
     }
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		tableManifest.setEditable(true);
@@ -420,6 +419,7 @@ public class PrimaryController implements Initializable {
 
     	tableManifest.getItems().addAll(data);	
     	tableManifest.getColumns().addAll(firstNameCol,secondNameCol,thirdNameCol);
+    	tableManifest.getSortOrder().addAll(firstNameCol, thirdNameCol);
     	
     	// get data2 column1's value from "data" Col1
     	for (sampleFile d1 : data) {

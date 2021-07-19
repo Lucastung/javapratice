@@ -595,5 +595,133 @@ public class PrimaryController implements Initializable {
 		alert.setContentText(s);
 		alert.show();
 		}
+	@FXML
+    private void exportTCC(ActionEvent e) {
+		ObservableList<Map<String, String>> checkdata = tvSampleList.getItems();
+		ObservableList<TableColumn<Map<String, String>, ?>>tcs = tvSampleList.getColumns();		
+    	if(checkdata.isEmpty()) {
+    		Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Warning");
+			String s = "Please load dataset first.";
+			alert.setContentText(s);
+			alert.show();
+			return;
+    	}
+    	//Create manifest content and check null value
+    	//Get header list
+    	ArrayList <String> hlst = new ArrayList<String>();
+    	String[][] tccmani = null;
+    	String header = "SampleID";
+    	for(TableColumn tc:tcs) {
+    		if(tc.getText().equals("SampleID")) continue;
+    		hlst.add(tc.getText());
+    		header += "\t"+tc.getText();
+    	}    	
+    	//StringBuilder sb = new StringBuilder(header);
+    	ArrayList <String> sa = new ArrayList<String>();
+    	sa.add(header);
+    	//append data and check     	
+    	for(Map<String, String> sf : checkdata) {
+    		String dline = sf.get("SampleID");
+    		for(String factor : hlst) {
+    			String value = sf.get(factor);
+    			if(value == null || value.isEmpty()) {
+        			Alert alert = new Alert(AlertType.INFORMATION);
+        			alert.setTitle("Warning");
+        			//alert.setHeaderText("Information Alert");
+        			String s = "factor "+factor+"of "+sf.get("SampleID")+" is empty!";
+        			alert.setContentText(s);
+        			alert.show();   			
+        			return;
+        		}
+    			dline += "\t"+value;   			
+    		}
+    		//sb.append("\n"+dline);
+    		sa.add(dline);
+    	} 
+    	//split sb to tcc manifest format
+    	for(String dd : sa) {
+    		System.out.println(dd);
+    	}
+    	int group = sa.get(0).split("\t").length;
+    	int sample = sa.size()-1;
+      	//System.out.println("There are "+sample+"samples");
+    	//System.out.println("There are "+(sa.get(0).split("\t").length-1)+"factors");
+    	tccmani = new String[sample*(group-1)+(group-1)][2];
+    	String[] head = sa.get(0).split("\t");
+    	//add sampleID
+		for(int k = 0 ; k < group-1 ; k ++) {			
+	    		tccmani[k*sample+k][0]=head[0];
+			}
+        //add factors
+		for(int k = 0 ; k < group-1 ; k ++) {			
+    		tccmani[k*sample+k][1]=head[k+1];
+		}
+		//add each sample
+		for(int i = 1 ; i < sample+1 ; i ++) {			
+			String s = sa.get(i).split("\t")[0].replace("-", ".");
+			if(Character.isDigit(s.charAt(0)) ) {
+				s = "X"+s;	
+			}
+			for(int k = 0 ; k < group-1 ; k ++) {	
+				tccmani[k*sample+k+i][0]=s;
+			}			
+		}
+		//add value
+		int count = 0 ;
+		for(int i = 1 ; i < sample+1 ; i ++) {
+			String[] dd = sa.get(i).split("\t");
+			int count2 = 0 ;
+			
+			for(int j = 1 ; j < group ; j ++) {
+				tccmani[(sample)*count2+j+count][1] = dd[j];
+				count2 ++;
+			}
+			count ++;
+		}
+		//test for output data
+    	/*
+		for(String[] dd : tccmani) {
+    		String s = "";
+    		for(int r = 0; r < dd.length ; r ++) {
+    			s += ","+dd[r];
+    		}	
+    		System.out.println(s);
+    	}
+    	*/
+		//read data to sb
+		StringBuilder sb = new StringBuilder(tccmani[0][0]+","+tccmani[0][1]);
+		for(int i = 1; i < sample*(group-1)+(group-1) ; i ++) {
+			String s = tccmani[i][0]+","+tccmani[i][1];
+			sb.append("\n"+s);
+		}
+		//save to file
+		FileChooser savefileName = new FileChooser();
+    	savefileName.setTitle("Save as...");   	
+    	Date dNow = new Date( );
+        SimpleDateFormat df = new SimpleDateFormat ("yyyyMMdd");
+    	savefileName.setInitialFileName(df.format(dNow)+"_TCC_manifest.txt");
+    	File selectFile  = savefileName.showSaveDialog(null);
+    	if(selectFile == null) return;
+    	File txtfile = selectFile;	
+    	//
+    	BufferedWriter bf;
+		try {
+			bf = new BufferedWriter(new FileWriter(txtfile));
+			bf.append(sb.toString());
+	    	bf.flush();
+	    	bf.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			}
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("TCC-Gui manifest file Saving");
+		//alert.setHeaderText("Information Alert");
+		String s = "The file was saved.";
+		alert.setContentText(s);
+		alert.show();	
+		
+		
+	}
 	}
 

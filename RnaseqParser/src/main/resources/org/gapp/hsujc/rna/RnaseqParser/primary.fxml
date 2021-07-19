@@ -17,6 +17,7 @@
             <Button mnemonicParsing="false" onAction="#loadproj" text="Import Project" />
             <Button fx:id="exportproj" mnemonicParsing="false" onAction="#exportproj" text="Save Project" />
             <Button fx:id="Export" mnemonicParsing="false" onAction="#export" text="Run" />
+            <Button mnemonicParsing="false" onAction="#exportTCC" text="ExpoTCC" />
          </children>
       </HBox>
    </top>

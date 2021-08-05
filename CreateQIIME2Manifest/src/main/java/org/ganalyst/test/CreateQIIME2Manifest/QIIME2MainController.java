@@ -257,7 +257,65 @@ public class QIIME2MainController implements Initializable {
 			
 		} catch (IOException e2) {
 			e2.printStackTrace();
-		}	
+		}
+    	
+    	//Choose column type is category/numeric from metadata file and export to tsv format file
+    	FileChooser saveCategoryCol = new FileChooser();
+    	saveCategoryCol.setTitle("Save as...");
+    	saveCategoryCol.setInitialFileName("categoricalList.tsv");
+    	File selectCategoryColFileFormat  = saveCategoryCol.showSaveDialog(null);
+    	if(selectCategoryColFileFormat == null) return;
+    	File FixedAsCategoryTsvFile = selectCategoryColFileFormat;
+    	BufferedWriter writeCategoryColFile;
+    	
+    	FileChooser saveNumericCol = new FileChooser();
+    	saveNumericCol.setTitle("Save as...");
+    	saveNumericCol.setInitialFileName("numericList.tsv");
+    	File selectNumericColFileFormat  = saveNumericCol.showSaveDialog(null);
+    	if(selectNumericColFileFormat == null) return;
+    	File FixedAsNumericTsvFile = selectNumericColFileFormat;
+    	BufferedWriter writeNumericColFile;
+    	
+    	try {
+    		StringBuilder metadataCategoryColHeader = new StringBuilder(); 
+    		StringBuilder metadataNumericColHeader = new StringBuilder();
+    		tableMetadata.getColumns();
+    		String tableMetadataHeaderline = "";
+			String tableMetadataColTypeline ="";
+			for(TableColumn getTableMetadataCol : tableMetadata.getColumns()) {
+				String metadataCategoryColName = getTableMetadataCol.getText();				
+				tableMetadataHeaderline += metadataCategoryColName+"\t";
+				tableMetadataColTypeline += metadataColType.get(metadataCategoryColName)+"\t";
+			}
+			System.out.println(tableMetadataHeaderline);
+			String[] tableMetadataColHeaderkeys = tableMetadataHeaderline.trim().split("\t");
+			String[] tableMetadataColTypekeys = tableMetadataColTypeline.trim().split("\t");
+			String chooseCategoryHeaderline = "";
+			String chooseNumericHeaderline = "";
+			for (int c=1; c<tableMetadataColTypekeys.length; c++) {
+				if (tableMetadataColTypekeys[c].equals("Category")) {
+					chooseCategoryHeaderline += tableMetadataColHeaderkeys[c]+"\t";
+				}else if (tableMetadataColTypekeys[c].equals("Numeric")) {
+					chooseNumericHeaderline += tableMetadataColHeaderkeys[c]+"\t";
+				} 				
+			}		
+			metadataCategoryColHeader.append(chooseCategoryHeaderline.trim());		
+			writeCategoryColFile = new BufferedWriter(new FileWriter(FixedAsCategoryTsvFile));
+			writeCategoryColFile.append(metadataCategoryColHeader).toString();
+			writeCategoryColFile.flush();
+			writeCategoryColFile.close();
+			
+			metadataNumericColHeader.append(chooseNumericHeaderline.trim());
+			writeNumericColFile = new BufferedWriter(new FileWriter(FixedAsNumericTsvFile));
+			writeNumericColFile.append(metadataCategoryColHeader).toString();
+			writeNumericColFile.flush();
+			writeNumericColFile.close();
+			
+		} catch (IOException e1) {
+			
+			e1.printStackTrace();
+		}
+    	
     }  
 
 	@FXML
